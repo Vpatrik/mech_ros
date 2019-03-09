@@ -1,0 +1,117 @@
+ <launch>
+ 
+<!-- Predelat tak, aby do absolute kalmana sly taky stejne vstupy jako do relativniho, a ne primo vystup z relativniho
+ - kovariancni matice z relativniho porad roste, znehodnocovalo by to estimaci -->
+
+  <!-- Extended Kalman filter fusion - absolute-->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_abs" clear_params="true" >
+        <param name="frequency" value="30"/>
+        <param name="sensor_timeout" value="0.1"/>
+        <param name="two_d_mode" value="true"/>
+      
+       <!-- Otestovat zpozdeni kamery, tohle vraci filtr do doby, kdy vzniklo mereni -->
+        <param name="smooth_lagged_data" value="false"/>
+        <!-- Jak dlouho bude system uchovavat svoje informace kvuli zpozdeni senzoru -->
+        <param name="history_length" value="0.4"/>
+
+
+        <param name="map_frame" value="map"/>
+        <param name="odom_frame" value="mechROS/tf/odom"/>
+        <param name="base_link_frame" value="mechROS_base_link"/>
+        <param name="world_frame" value="map"/>
+      
+        <param name="odom0" value="/mechROS/base_control/odom"/>
+        <param name="pose0" value="/estimated_pose_markers"/>
+        <param name="imu0" value="/imu/data_corrected"/>
+        
+        <rosparam param="odom0_config">[false,  false,  false,
+                                        false,  false,  false,
+                                        true,  true,  false,
+                                        false,  false,  true,
+                                        false,  false,  false]</rosparam>
+
+        <rosparam param="imu0_config">[false,  false,  false,
+                                        false,  false,  true,
+                                        false,  false,  false,
+                                        false,  false,  true,
+                                        true,  false,  false]</rosparam>
+
+        <rosparam param="pose0_config">[true,  true,  false,
+                                        false,  false,  true,
+                                        false,  false,  false,
+                                        false,  false,  false,
+                                        false,  false,  false]</rosparam>
+        
+        
+        <param name="odom0_differential" value="false"/>
+        <param name="pose0_differential" value="false"/>
+        <param name="imu0_differential" value="false"/>
+        
+        <param name="odom0_relative" value="false"/>
+        <param name="pose0_relative" value="false"/>
+        <param name="imu0_relative" value="false"/>
+        
+        <param name="odom0_queue_size" value="50"/>
+        <param name="pose0_queue_size" value="10"/>
+        <param name="imu0_queue_size" value="50"/>
+
+        <!-- Thresholdy - otestovat -->
+        <!-- Values are withdraw from chi-square probability -->
+        <!-- <param name="odom0_twist_rejection_threshold" value="10"/> -->
+        <!-- <param name="imu0_angular_velocity_rejection_threshold" value="10"/> -->
+        <!-- <param name="imu0_linear_acceleration_rejection_threshold" value="10"/> -->
+        <param name="pose0_rejection_threshold" value="7.815"/>
+
+      
+        <param name="print_diagnostics" value="true"/>
+      
+        <!-- <param name="debug"           value="true"/>
+        <param name="debug_out_file"  value="/home/patrik/catkin_ws/src/mech_ros/debug/debug_ekf_abs.txt"/> -->
+      
+        <!-- <rosparam param="control_config">[true,  false, false,
+                                  false, false, true]</rosparam> -->
+
+        <rosparam param="process_noise_covariance">[0.05, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                                                    0,    0.05, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                                                    0,    0,    0.06, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                                                    0,    0,    0,    0.05, 0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                                                    0,    0,    0,    0,    0.05, 0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0.05, 0,     0,     0,    0,    0,    0,    0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0.05, 0,     0,    0,    0,    0,    0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0.05, 0,    0,    0,    0,    0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0.05, 0,    0,    0,    0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0.01, 0,    0,    0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0.01, 0,    0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0.02, 0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0.01, 0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0.01, 0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0.015]</rosparam>
+      
+        <param name="dynamic_process_noise_covariance" value="true"/>
+
+        <rosparam param="initial_estimate_covariance">[1e1, 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                                       0,    1e1, 0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                                       0,    0,    1e-3, 0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                                       0,    0,    0,    1e-3, 0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                                       0,    0,    0,    0,    1e-3, 0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                                       0,    0,    0,    0,    0,    1e1, 0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                                       0,    0,    0,    0,    0,    0,    1e-3, 0,    0,    0,     0,     0,     0,    0,    0,
+                                                       0,    0,    0,    0,    0,    0,    0,    1e-3, 0,    0,     0,     0,     0,    0,    0,
+                                                       0,    0,    0,    0,    0,    0,    0,    0,    1e-3, 0,     0,     0,     0,    0,    0,
+                                                       0,    0,    0,    0,    0,    0,    0,    0,    0,    1e-3,  0,     0,     0,    0,    0,
+                                                       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     1e-3,  0,     0,    0,    0,
+                                                       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     1e-3,  0,    0,    0,
+                                                       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     1e-3, 0,    0,
+                                                       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    1e-3, 0,
+                                                       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    1e-9]</rosparam>
+        
+            <!-- Initial estimation - delete after testing -->
+        <rosparam param="initial_state">[-3.5,  -2.5,  0.0,
+                                          0.0,  0.0,  0.0,
+                                          0.0,  0.0,  0.0,
+                                          0.0,  0.0,  0.0,
+                                          0.0,  0.0,  0.0]</rosparam>
+    
+        <param name="publish_tf" value="true"/>
+    </node>
+</launch>

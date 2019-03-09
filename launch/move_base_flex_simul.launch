@@ -1,0 +1,28 @@
+<launch>
+  <!-- Arguments -->
+
+  <arg name="cmd_vel_topic" default="/mechROS/base_control/cmd_vel" />
+  <arg name="odom_topic" default="/odometry_rel/filtered" />
+
+
+  <!-- move_base -->
+  <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" respawn="false" name="move_base_flex"  output="screen">
+
+    <rosparam file="$(find mech_ros)/navigation/MBFlex/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find mech_ros)/navigation/MBFlex/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find mech_ros)/navigation/MBFlex/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mech_ros)/navigation/MBFlex/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mech_ros)/navigation/MBFlex/move_base_params.yaml" command="load" />
+    <rosparam file="$(find mech_ros)/navigation/MBFlex/planners.yaml" command="load" />
+    <rosparam file="$(find mech_ros)/navigation/MBFlex/controllers.yaml" command="load" />
+    <rosparam file="$(find mech_ros)/navigation/MBFlex/recovery_behaviours.yaml" command="load" />
+
+    <!-- <param name="robot_frame" value="mechROS_base_link" /> -->
+    <remap from="/cmd_vel" to="$(arg cmd_vel_topic)"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
+
+
+  </node>
+
+</launch>
+

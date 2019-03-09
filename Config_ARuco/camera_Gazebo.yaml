@@ -1,0 +1,19 @@
+avg_reprojection_error: 0.5197366775807769
+camera_matrix:
+  cols: 3
+  data:
+  - [762.724934, 0., 640.5]
+  - [0.0, 762.724934, 360.5]
+  - [0.0, 0.0, 1.0]
+  dt: d
+  rows: 3
+distortion_coefficients:
+  cols: 5
+  data:
+  - [0.0, 0.0, 0.0, 0.0,
+    0.0]
+  dt: d
+  rows: 1
+image_height: 1280
+image_width: 720
+

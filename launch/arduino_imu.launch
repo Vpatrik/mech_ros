@@ -1,0 +1,36 @@
+<launch>
+
+  <node pkg="rosserial_python" type="serial_node.py" name="ros_arduino_imu_raw" output="screen" respawn="true">
+    <param name="~port" value="/dev/ttyACM0" />
+    <!-- <param name="~port" value="/dev/ttyUSB0" /> -->
+    <param name="~baud" value="115200" />
+        <!-- <param name="~baud" value="234000" /> -->
+  </node> 
+
+  <!-- <node pkg="mech_ros" type="IMU_odometry.py" name="imu_convertor" output="screen" respawn="true"/> -->
+
+
+  <!-- IMU Madgwick fusion -->
+    <!-- <node name="imu_filter_node" pkg="imu_filter_madgwick" type="imu_filter_node" output="screen">
+    <param name="world_frame" value="nwu" />
+    <param name="use_magnetic_field_msg" value="true" />
+    <param name="use_mag" value="true" />
+    <param name="orientation_stddev" value="0.1" />
+    <param name="fixed_frame" value="imu_link" />
+    <param name="publish_tf" value="false" /> -->
+        <!-- Debug -->
+    <!-- <param name="publish_debug_topics" value="true" />  -->
+    <!-- <param name="stateless" value="false" /> -->
+
+<!-- </node> -->
+
+  <node pkg="mech_ros" type="Aruco_detect.py" name="marker_detector" output="screen" respawn="true"/>
+
+  <node pkg="mech_ros" type="marker_tr_publish.py" name="marker_tr" output="screen" respawn="true"/> 
+
+<!-- Rosbag recording -->
+    <node pkg="rosbag" type="record" name="rosbag_record"
+    
+        args=" record -o /home/patrik/catkin_ws/src/mech_ros/bag_files/ -a"/>
+
+</launch>
