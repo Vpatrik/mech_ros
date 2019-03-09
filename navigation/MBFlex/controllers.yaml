@@ -1,0 +1,125 @@
+controllers:
+#   - name: 'eband'
+#     type: 'eband_local_planner/EBandPlannerROS'
+   - name: 'dwa'
+     type: 'dwa_local_planner/DWAPlannerROS'
+   - name: 'pose_follower'
+     type: 'pose_follower/PoseFollower'
+
+dwa:
+# Robot Configuration Parameters
+  max_vel_x: 0.22
+  min_vel_x: -0.22
+
+  max_vel_y: 0.0
+  min_vel_y: 0.0
+
+# The velocity when robot is moving in a straight line
+  max_trans_vel:  0.22
+  min_trans_vel:  0.05
+
+  max_rot_vel: 3.5
+  min_rot_vel: 0.1
+
+  acc_lim_x: 0.4
+  acc_lim_y: 0.0
+  acc_lim_theta: 10
+  acc_lim_trans: 0.4
+
+# Goal Tolerance Parametes
+  xy_goal_tolerance: 0.09
+  yaw_goal_tolerance: 0.17
+  latch_xy_goal_tolerance: false
+  sim granularity: 0.025
+
+# Forward Simulation Parameters
+  sim_time: 3.0
+  vx_samples: 10
+  vy_samples: 0
+  vth_samples: 20
+  controller_frequency: 10.0
+
+# Trajectory Scoring Parameters
+  path_distance_bias: 34.0
+  goal_distance_bias: 20.0
+  occdist_scale: 0.05
+  forward_point_distance: 0.325
+  stop_time_buffer: 0.2
+  scaling_speed: 0.25
+  max_scaling_factor: 0.2
+
+
+# Oscillation Prevention Parameters
+  oscillation_reset_dist: 0.05
+
+# Debugging
+  publish_traj_pc : true
+  publish_cost_grid_pc: true
+
+  prune_plan: true
+
+
+pose_follower:
+# Robot Configuration Parameters
+  k_trans: 4.0
+  k_rot: 1.0
+
+# Goal Tolerance Parametes
+  tolerance_trans: 0.05 # within this distance to the goal, finally rotate to the goal heading (also, we've reached our goal only if we're within this dist)
+  tolerance_rot: 0.05 # we've reached our goal only if we're within this angular distance
+  tolerance_timeout: 0.05 # we've reached our goal only if we're within range for this long and stopped
+  holonomic: false
+  samples: 10 # number of samples (scaling factors of our current desired twist) to check the validity of
+
+  max_vel_lin: 0.15
+  max_vel_th: 1.0
+  min_vel_lin: 0.05
+  min_vel_th: 0.1
+  min_in_place_vel_th: 0.0 # when we're near the end and would be trying to go no faster than this translationally, just rotate in place instead
+  in_place_trans_vel: 0.0 # if we're rotating in place, go at least this fast to avoid getting stuck
+
+# we're "stopped" if we're going slower than these velocitie
+  trans_stopped_velocity: 0.0001
+  rot_stopped_velocity: 0.001
+
+  allow_backwards: true # if this is true, we don't care whether we go backwards or forwards
+  turn_in_place_first: false # if this is true, turn in place to face the new goal instead of arcing toward it
+  max_heading_diff_before_moving: 0.17 # if turn_in_place_first is true, turn in place if our heading is more than this far from facing the goal location
+
+
+eband:
+  Ctrl_Rate: 20.0
+  bubble_velocity_multiplier: 2.0
+  costmap_weight: 10.0
+  differential_drive: true
+  disallow_hysteresis: false
+  eband_equilibrium_approx_max_recursion_depth: 3
+  eband_equilibrium_relative_overshoot: 0.75
+  eband_external_force_gain: 3.0
+  eband_internal_force_gain: 2.0
+  eband_min_relative_overlap: 0.7
+  eband_significant_force_lower_bound: 0.15
+  eband_tiny_bubble_distance: 0.01
+  eband_tiny_bubble_expansion: 0.01
+  in_place_trans_vel: 0.0
+  k_damp: 3.5
+  k_prop: 4.0
+  marker_lifetime: 0.5
+  max_acceleration: 0.2
+  max_rotational_acceleration: 0.3
+  max_translational_acceleration: 0.4
+  # Lower values for testing with the actual robot.
+  max_vel_lin: 1.1 #0.5 #1.45
+  max_vel_th: 1.2 #0.5 #2.0
+  min_in_place_vel_th: 0.05
+  min_vel_lin: 0.0
+  min_vel_th: 0.0
+  num_iterations_eband_optimization: 4
+  rot_stopped_vel: 0.01
+  rotation_correction_threshold: 0.5
+  rotation_threshold_multiplier: 1.0
+  trans_stopped_vel: 0.01
+  virtual_mass: 100.0
+  xy_goal_tolerance: 0.2
+  yaw_goal_tolerance: 0.2
+  prune_plan: true
