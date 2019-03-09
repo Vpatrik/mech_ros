@@ -1,0 +1,36 @@
+# priblizne 24x20 cm, premerit
+footprint: [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.10]]
+#robot_radius: 0.17
+
+
+
+track_unknown_space: true
+map_type: costmap
+
+plugins:
+  - {name: static_map, type: "costmap_2d::StaticLayer"}
+#  - {name: obstacles, type: "costmap_2d::VoxelLayer"}
+  - {name: obstacles, type: "costmap_2d::ObstacleLayer"}
+  - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+
+
+#observation_sources: scan
+#scan: {sensor_frame: /laser_link, data_type: LaserScan, topic: /front_laser/scan, marking: true, clearing: true}
+
+
+#layer definitions
+static:
+    map_topic: /map
+    subscribe_to_updates: false
+#    trinary_costmap: false
+
+#obstacles_laser:
+#    observation_sources: laser
+#    laser: {data_type: LaserScan, clearing: true, marking: true, topic: scan, inf_is_valid: true}
+#    obstacle_range: 3.0
+#    raytrace_range: 3.5
+
+inflation_layer:
+   inflation_radius: 0.38
+   cost_scaling_factor: 2.55
+

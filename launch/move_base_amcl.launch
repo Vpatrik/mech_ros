@@ -1,0 +1,20 @@
+<launch>
+  <!-- Arguments -->
+
+  <arg name="cmd_vel_topic" default="/mechROS/base_control/cmd_vel" />
+  <arg name="odom_topic" default="/mechROS/odom" />
+
+  <!-- move_base -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <param name="/use_sim_time" value="true"/> 
+    <rosparam file="$(find mech_ros)/navigation/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find mech_ros)/navigation/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find mech_ros)/navigation/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mech_ros)/navigation/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mech_ros)/navigation/move_base_params.yaml" command="load" />
+    <rosparam file="$(find mech_ros)/navigation/dwa_local_planner_params.yaml" command="load" />
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
+  </node>
+</launch>

@@ -1,0 +1,32 @@
+digraph G {
+node [shape=box];
+"mechROS_base_link" [label="mechROS_base_link"];
+"back_left_wheel" [label="back_left_wheel"];
+"back_right_wheel" [label="back_right_wheel"];
+"front_camera_link" [label="front_camera_link"];
+"front_left_wheel" [label="front_left_wheel"];
+"front_right_wheel" [label="front_right_wheel"];
+"imu_link" [label="imu_link"];
+"imu_magnetic_link" [label="imu_magnetic_link"];
+"laser_link" [label="laser_link"];
+"laser_base_link" [label="laser_base_link"];
+node [shape=ellipse, color=blue, fontcolor=blue];
+"mechROS_base_link" -> "back_left_wheel_joint" [label="xyz: -0.063 0.0735 0.018 \nrpy: 0 -0 0"]
+"back_left_wheel_joint" -> "back_left_wheel"
+"mechROS_base_link" -> "back_right_wheel_joint" [label="xyz: -0.063 -0.0735 0.018 \nrpy: 0 -0 0"]
+"back_right_wheel_joint" -> "back_right_wheel"
+"mechROS_base_link" -> "front_camera_joint" [label="xyz: 0.088 0 0.0204 \nrpy: 0 -0 0"]
+"front_camera_joint" -> "front_camera_link"
+"mechROS_base_link" -> "front_left_wheel_joint" [label="xyz: 0.063 0.0735 0.018 \nrpy: 0 -0 0"]
+"front_left_wheel_joint" -> "front_left_wheel"
+"mechROS_base_link" -> "front_right_wheel_joint" [label="xyz: 0.063 -0.0735 0.018 \nrpy: 0 -0 0"]
+"front_right_wheel_joint" -> "front_right_wheel"
+"mechROS_base_link" -> "imu_joint" [label="xyz: 0 0 0.055 \nrpy: 0 -0 0"]
+"imu_joint" -> "imu_link"
+"imu_link" -> "imu_magnetic_joint" [label="xyz: 0 0 0 \nrpy: 0 -1.5708 1.5708"]
+"imu_magnetic_joint" -> "imu_magnetic_link"
+"mechROS_base_link" -> "laser_joint" [label="xyz: 0 0 0.0804 \nrpy: 0 -0 0"]
+"laser_joint" -> "laser_link"
+"laser_link" -> "laser_base_joint" [label="xyz: 0 0 -0.05 \nrpy: 0 -0 0"]
+"laser_base_joint" -> "laser_base_link"
+}
