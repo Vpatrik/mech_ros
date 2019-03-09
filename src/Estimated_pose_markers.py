@@ -1,0 +1,355 @@
+#!/usr/bin/env python
+
+import rospy
+import yaml
+
+# import tf2_ros
+
+from geometry_msgs.msg import Quaternion, Transform
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from math import pi, cos, sin, atan2
+from numpy import zeros, dot, linalg, where, sum
+from scipy import linalg as lin
+from mech_ros_msgs.msg import MarkerList
+from mech_ros_msgs.msg import Marker
+
+
+
+class PoseEstimator():
+    def __init__(self):
+
+        rospy.init_node("Pose_estimator")
+
+        # Coefficients for calculating variance from relative pose
+        self.K1 = 1.5e10
+        self.A1 = 3.3
+        self.K2 = 50
+        self.A2 = 2.0
+        self.K3 = 20
+        self.A3 = 1.1
+
+        self.valid_marker_flag = False
+        self.seq = 0
+
+        cov_pose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+        # ROS parameters
+        self.markers_map = rospy.get_param("~markers_map", "/home/patrik/catkin_ws/src/mech_ros/map/muzeum_aruco_markers.yaml")
+        self.min_covariance = rospy.get_param("~min_covariance", 0.0001)
+        self.marker_detector_topic = rospy.get_param("~marker_detector_topic", "/markers")
+        self.estimated_pose_topic = rospy.get_param("~estimated_pose_topic", "/estimated_pose_markers")
+
+
+        # ROS subscribers and publishers
+        rospy.Subscriber(self.marker_detector_topic, MarkerList, self.marker_cb)
+        self.pose_publisher = rospy.Publisher(self.estimated_pose_topic, PoseWithCovarianceStamped, queue_size=10)
+        
+        # Load markers map
+        self.landmarks = {}
+        self.landmarks_frame_id = ""
+        self.load_map_file()
+
+
+        cov_pose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+        self.estimated = PoseWithCovarianceStamped()
+        self.estimated.pose.covariance = cov_pose
+        self.estimated.header.frame_id = self.landmarks_frame_id 
+
+    def load_map_file(self):
+        with open(self.markers_map, 'r') as stream:
+            data_loaded = yaml.load(stream)
+            self.landmarks = data_loaded["landmarks"]
+            self.landmarks_frame_id = data_loaded["frame_id"]
+
+
+    def calculateCovariances(self, S_rel, Yaw_rel, Marker_id):
+        # Compute covariance matrix of measurement in local coordinate frame
+        S_norm = S_rel/max(abs(cos(Yaw_rel)),abs(sin(Yaw_rel)))
+        covarianceMeas = zeros([2,2])
+        covarianceMeas[0,0] = self.K1/(S_norm**self.A1)
+        covarianceMeas[1,1] = self.K2/(S_norm**self.A2)
+        covarianceMeas[covarianceMeas < self.min_covariance] = self.min_covariance
+
+        # Load covariances from markers .yaml file
+        v_xx, v_yy, _, _, _, v_FF = self.landmarks[Marker_id]["Covariances"]
+        # Assing loaded variances to covariance matrix of marker placement
+        covarianceTrans = zeros([3,3])
+        covarianceTrans[0,0] = v_xx
+        covarianceTrans[1,1] = v_yy
+
+        # covariance in angle = cov_fi + cov_Fi
+        covarianceTrans[2,2] = self.K3/(S_norm**self.A3) + v_FF
+        if covarianceTrans[2,2] < self.min_covariance:
+            covarianceTrans[2,2] = self.min_covariance
+        
+        return covarianceMeas, covarianceTrans
+
+
+    def calculateTransformedCovariance(self, a_x, a_y, fi, x, y, Fi, S_rel, Marker_id):
+
+        ## Parameters
+        # a_x,a_y translation from marker to camera in camera coordinate system
+        # fi rotation from marker to camera
+        # x,y, translation from global frame to marker
+        # Fi rotation from global frame to marker
+
+
+        # Compute Jacobians
+        # J_a - Jacobian of point measurement
+        J_a = zeros([2,2])
+        J_a[0,0] = cos(fi+Fi)
+        J_a[0,1] = -sin(fi+Fi)
+        J_a[1,0] = sin(fi+Fi)
+        J_a[1,1] = cos(fi+Fi)
+
+        # J_p - Jacobian of transformation
+        J_p = zeros([2,3])
+        J_p[0,0] = 1
+        J_p[0,2] = -a_x*sin(fi+Fi) - a_y*cos(fi+Fi)
+        J_p[1,1] = 1
+        J_p[1,2] = a_x*cos(fi+Fi) - a_y*sin(fi+Fi)
+
+        # Compute transformed covariance matrix of a': Cov_a = J_a.covarianceMeas.J_a' + J_p.covarianceTrans.J_p'
+        covarianceMeas, covarianceTrans = self.calculateCovariances(S_rel, fi, Marker_id)
+        cov_a = dot(dot(J_a, covarianceMeas), J_a.T) + dot(dot(J_p, covarianceTrans), J_p.T)
+
+        # Make 3x3 covariance matrix for transformed: a_x', a_y', theta  (theta = Fi + fi)
+        transformedCovariance = zeros([3,3])
+        transformedCovariance[:2,:2] = cov_a
+        transformedCovariance[2,2] = covarianceTrans[2][2]
+        transformedCovariance[transformedCovariance < self.min_covariance] = self.min_covariance
+        return transformedCovariance
+
+    # Compute product for n gaussians
+    def multiVariateGaussianProduct(self, Mean_vectors, Cov_matrices):
+
+
+        matrices_num = Mean_vectors.shape[0]
+        variate_num = Mean_vectors.shape[1]
+
+        # Initialize resulting matrices
+        Cov_matrix = Cov_matrices[0]
+        Mean_vector = Mean_vectors[0]
+
+        # Initialize information matrices
+        inf_vec = zeros([variate_num,1])
+        inf_mat = zeros([variate_num,variate_num])
+        inf_mat_sum = zeros([variate_num,variate_num])
+
+
+        # Compute information matrix and information vector and then convert to mean vector and covariance matrix
+        try:
+            for i in range(matrices_num):
+                
+                inf_mat = linalg.inv(Cov_matrices[i])
+                inf_mat_sum += inf_mat
+                inf_vec += dot(inf_mat, Mean_vectors[i])
+
+
+            Cov_matrix = linalg.inv(inf_mat_sum)
+            Mean_vector = dot(Cov_matrix, inf_vec)
+
+            return Mean_vector, Cov_matrix
+
+        except linalg.LinAlgError as err:
+            if 'Singular matrix' in str(err):
+
+                try: 
+                    # Initialize matrices
+                    Cov_matrix = Cov_matrices[0]
+                    Mean_vector = Mean_vectors[0]
+
+                    for i in range(matrices_num-1):
+
+                        # Using Choleskeho decomposition
+                        cholesky_matrix = linalg.cholesky(Cov_matrix + Cov_matrices[i+1])
+                        chol_cov1 = linalg.solve(cholesky_matrix, Cov_matrix)
+                        chol_cov2 = linalg.solve(cholesky_matrix, Cov_matrices[i+1])
+                        chol_mean1 = linalg.solve(cholesky_matrix, Mean_vector)
+                        chol_mean2 = linalg.solve(cholesky_matrix, Mean_vectors[i+1])
+
+                        Cov_matrix = dot(chol_cov1.T,chol_cov2)
+                        Mean_vector = dot(chol_cov2.T,chol_mean1) + dot(chol_cov1.T,chol_mean2)
+
+                    return Mean_vector, Cov_matrix             
+
+                except linalg.LinAlgError as err:
+                    if 'positive definite' in str(err):
+
+                        try:
+                            # Initialize matrices
+                            Cov_matrix = Cov_matrices[0]
+                            Mean_vector = Mean_vectors[0]
+
+                            for i in range(matrices_num-1):
+
+                                cholesky_matrix = lin.cholesky((Cov_matrix + Cov_matrices[i+1]), lower=True,check_finite=False)
+                                chol_cov1 = lin.solve_triangular(cholesky_matrix, Cov_matrix,lower=True,check_finite=False)
+                                chol_cov2 = lin.solve_triangular(cholesky_matrix, Cov_matrices[i+1],lower=True,check_finite=False)
+                                chol_mean1 = lin.solve_triangular(cholesky_matrix, Mean_vector,lower=True,check_finite=False)
+                                chol_mean2 = lin.solve_triangular(cholesky_matrix, Mean_vectors[i+1],lower=True,check_finite=False)
+            
+                                Cov_matrix = dot(chol_cov1.T,chol_cov2)
+                                Mean_vector = dot(chol_cov2.T,chol_mean1) + dot(chol_cov1.T,chol_mean2)
+
+                            return Mean_vector, Cov_matrix
+
+                        except:
+                            return Mean_vectors[0], Cov_matrices[0]
+
+                    else:
+                        rospy.logerr("Unexpected error when computing multivariate product")
+
+            else:
+                rospy.logerr("Unexpected error when computing multivariate product")
+                return Mean_vectors[0], Cov_matrices[0]
+
+
+    ######## Predelat na estimaci polohy teziste vzhledem ke glob. sour. systemu, momentalne je to vzhledem ke kamere
+    # translace z base_link to camera Translation: [0.088, 0.000, 0.020]
+    # pripoctu k x_m a z_m (ZAPORNE HODNOTY)
+
+
+    def averageMeasurement(self, Mean_vectors, Cov_matrices):
+        sum_sigma_x = sum(1/Cov_matrices[:,0,0])
+        sum_sigma_y = sum(1/Cov_matrices[:,1,1])
+        sum_sigma_fi = sum(1/Cov_matrices[:,2,2])
+
+
+        matrices_num = Mean_vectors.shape[0]
+        mean_vec = zeros([3,1])
+
+        avg_cov = sum(Cov_matrices, axis = 0)/matrices_num
+
+        for i in range(matrices_num):
+            mean_vec[0,0] += Mean_vectors[i,0,0]/(sum_sigma_x*Cov_matrices[i,0,0])
+            mean_vec[1,0] += Mean_vectors[i,1,0]/(sum_sigma_y*Cov_matrices[i,1,1])
+            mean_vec[2,0] += Mean_vectors[i,2,0]/(sum_sigma_fi*Cov_matrices[i,2,2])
+
+        return mean_vec, avg_cov
+
+    def marker_cb(self, Markers):
+
+        self.valid_marker_flag = False
+        time_to_compare = Markers.header.stamp
+        mark_num = len(Markers.markers)
+        mean = zeros((mark_num,3,1))
+        covariances = zeros((mark_num,3,3))
+        i = 0
+
+        for marker in Markers.markers:
+            Marker_id = int(marker.id)
+
+            surface = marker.surface
+            if surface < 1300:
+
+                # Reshape allocated arrays
+                mean = mean[:-1]
+                covariances = covariances[:-1]
+                continue
+
+            time = marker.header.stamp          
+            if time_to_compare != time:
+
+                # Reshape allocated arrays
+                mean = mean[:-1]
+                covariances = covariances[:-1]
+                continue
+            
+
+
+            # Check if marker is in dictionary
+            if not(any(Marker_id == key for key in self.landmarks)):
+                # Reshape allocated arrays
+                mean = mean[:-1]
+                covariances = covariances[:-1]
+                continue
+
+
+
+            self.valid_marker_flag = True
+            x_m = marker.pose.position.x - 0.088
+            y_m = marker.pose.position.y
+            # z_m = marker.pose.position.z - 0.02
+            # R_m = marker.pose.orientation.r
+            # P_m = marker.pose.orientation.p
+            Y_m = marker.pose.orientation.y
+
+
+            # Assign markers pose
+            x_mm,y_mm, _ = self.landmarks[Marker_id]["Translation"]
+            _, _, Y_mm =self.landmarks[Marker_id]["RPY"]
+        
+
+            mean[i,0,0] = (x_mm + cos(Y_mm+Y_m)*x_m - sin(Y_mm+Y_m)*y_m)
+            mean[i,1,0] = (y_mm + sin(Y_mm+Y_m)*x_m + cos(Y_mm+Y_m)*y_m)
+            
+            # Apply mod to Yaw - without mod average Yaw value jump when combining
+            if Y_m < 0:
+                Y_m += 2*pi
+
+            if Y_mm < 0:
+                Y_mm += 2*pi
+
+            mean[i,2,0] = Y_mm + Y_m
+
+
+            # Compute covariance matrix and transformed covariance matrix and store them
+            covariances[i] = self.calculateTransformedCovariance(mean[i,0,0],mean[i,1,0],Y_m,x_mm,y_mm,Y_mm, surface, Marker_id)
+            i =+1
+
+
+        if self.valid_marker_flag:
+            self.seq += 1
+            # Compute estimated mean vector and covariance matrix from all measurement
+            if mean.shape[0] > 1:
+                # mean_tr, cov_tr = self.multiVariateGaussianProduct(mean, covariances)
+                mean_tr, cov_tr = self.averageMeasurement(mean, covariances)
+            else:
+                mean_tr, cov_tr = mean[0], covariances[0]
+
+            cov_tr[cov_tr < self.min_covariance] = self.min_covariance
+           
+            # Fill estimated pose
+            self.estimated.header.stamp = time
+            self.estimated.header.seq = self.seq
+            self.estimated.pose.pose.position.x= mean_tr[0]
+            self.estimated.pose.pose.position.y= mean_tr[1]
+            q_convert = quaternion_from_euler(0,0,mean_tr[2])
+            self.estimated.pose.pose.orientation = Quaternion(*q_convert)
+
+
+            # Fill covariance
+
+            self.estimated.pose.covariance[0] = cov_tr[0,0]
+            self.estimated.pose.covariance[1] = cov_tr[0,1]
+            # cov_pose[5] = cov_tr[0][2]
+            self.estimated.pose.covariance[6] = self.estimated.pose.covariance[1]
+            self.estimated.pose.covariance[7] = cov_tr[1,1]
+            # cov_pose[11] = cov_tr[1][2]
+            # cov_pose[30] = cov_pose[5]
+            # cov_pose[31] = cov_pose[11]
+            self.estimated.pose.covariance[35] = cov_tr[2,2]
+
+            # Scale factor due to multivariate gaussian product is not gaussian without scale
+            # TODO
+
+            self.pose_publisher.publish(self.estimated)
+
+
+
+if __name__ == '__main__':
+    poseEstimator = PoseEstimator()
+    rospy.spin()
