@@ -1,0 +1,17 @@
+local_costmap:
+  global_frame: mechROS/tf/odom
+#  global_frame: /map
+  robot_base_frame: mechROS_base_link
+
+  update_frequency: 5.0
+  publish_frequency: 1.0
+  transform_tolerance: 0.5  
+
+
+  static_map: true
+  rolling_window: true 
+  width: 2.5
+  height: 2.5
+  resolution: 0.025
+# 
+
