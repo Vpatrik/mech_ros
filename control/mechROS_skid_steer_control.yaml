@@ -1,0 +1,47 @@
+mechROS:
+   base_control:
+      type        : "diff_drive_controller/DiffDriveController"
+      left_wheel  : ['front_left_wheel_joint', 'back_left_wheel_joint']
+      right_wheel : ['front_right_wheel_joint', 'back_right_wheel_joint']
+      publish_rate: 100.0               # default: 50
+
+      pose_covariance_diagonal: [0.1, 0.1, 0.1, 0.1, 0.1, 0.03]
+      twist_covariance_diagonal: [0.05, 0.05, 0.05, 0.05, 0.05, 0.2]  
+
+
+      wheel_separation : 0.18
+      wheel_radius : 0.05
+
+      # Wheel separation and radius multipliers
+      wheel_separation_multiplier: 1.42 # default: 1.0
+      wheel_radius_multiplier    : 1.0 # default: 1.0
+
+      # Velocity commands timeout [s], default 0.5
+      cmd_vel_timeout: 0.2
+      cmd_vel        : '/cmd_vel'
+
+      # Base frame_id
+      base_frame_id: mechROS_base_link # default: /mechROS_base_link
+
+      # Odometry
+      enable_odom_tf : false
+      odom_frame_id : "/mechROS/base_control/odom"
+
+      # Velocity and acceleration limits
+      # Whenever a min_* is unspecified, default to -max_*
+      linear:
+         x:
+            has_velocity_limits    : true
+            max_velocity           : 0.22 # m/ss
+            min_velocity           : -0.22 # m/s
+            has_acceleration_limits: true
+            max_acceleration       : 0.40  # m/s^2
+            min_acceleration       : -1.00 # m/s^2
+      angular:
+         z:
+            has_velocity_limits    : true
+            max_velocity           : 3.5  # rad/s
+            has_acceleration_limits: true
+            max_acceleration       : 10  # rad/s^2
+
+
