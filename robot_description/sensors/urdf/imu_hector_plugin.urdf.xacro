@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<robot name="sensor_imu" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!--Copyright (c) 2014, Robotnik Automation-->
+<!--All rights reserved.-->
+
+<!--Redistribution and use in source and binary forms, with or without-->
+<!--modification, are permitted provided that the following conditions are met:-->
+
+<!--* Redistributions of source code must retain the above copyright notice, this-->
+<!--  list of conditions and the following disclaimer.-->
+
+<!--* Redistributions in binary form must reproduce the above copyright notice,-->
+<!--  this list of conditions and the following disclaimer in the documentation-->
+<!--  and/or other materials provided with the distribution.-->
+
+<!--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"-->
+<!--AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE-->
+<!--IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE-->
+<!--DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE-->
+<!--FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL-->
+<!--DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR-->
+<!--SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER-->
+<!--CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,-->
+<!--OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE-->
+<!--OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
+
+  <xacro:macro name="sensor_imu_hector" params="prefix parent *origin">
+
+	  <joint name="${prefix}_joint" type="fixed">
+	      <axis xyz="1 0 0"/>
+	      <xacro:insert_block name="origin"/>
+	      <parent link="${parent}"/>
+	      <child link="${prefix}_link"/>
+	  </joint>
+	
+	  <link name="${prefix}_link">
+	      <inertial>
+	        <mass value="0.001"/>
+	        <origin rpy="0 0 0" xyz="0 0 0"/>
+	        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.0001"/>
+	      </inertial>
+	      <visual>
+	        <origin rpy="0 0 0" xyz="0 0 0"/>
+	        <geometry>
+	          <box size="0.001 0.001 0.001"/>
+	        </geometry>
+	      </visual>
+	      <collision>
+	        <origin rpy="0 0 0" xyz="0 0 0"/>
+	        <geometry>
+	          <box size=".001 .001 .001"/>
+	        </geometry>
+	      </collision>
+	  </link>
+       
+	  <gazebo>
+	    <plugin name="${prefix}_controller" filename="libhector_gazebo_ros_imu.so">
+	       <alwaysOn>true</alwaysOn>
+	       <topicName>${prefix}/data_raw</topicName>
+		   <serviceName>${prefix}/service_raw</serviceName>
+		   <bodyName>${prefix}_link</bodyName>
+		   <frameId>${prefix}_link</frameId>
+	       <updateRate>50.0</updateRate> 
+
+	       <gaussianNoise>0.01</gaussianNoise>		
+	       <!-- orientation parameters -->
+           <yawOffset>0.0</yawOffset>
+           <!--<yawOffset>0.0</yawOffset>-->
+           <yawDrift>0.005</yawDrift>
+           <!--<yawDrift>0.0</yawDrift>-->
+           <yawGaussianNoise>0.005</yawGaussianNoise>
+           <!--<yawGaussianNoise>0.0004</yawGaussianNoise>-->
+
+           <!-- angular velocities parameters -->
+           <rateOffset>0.0 0.0 0.0</rateOffset>
+           <rateDrift>0.005 0.005 0.005</rateDrift>
+           <!--<rateDrift>0.0 0.0 0.0</rateDrift>-->
+           <rateGaussianNoise>0.005 0.005 0.005</rateGaussianNoise>
+           <!--<rateGaussianNoise>0.004 0.004 0.004</rateGaussianNoise>-->
+
+           <!-- linear accelerations parameters -->
+           <accelOffset>0.0 0.0 0.0</accelOffset>
+           <accelDrift>0.005 0.005 0.005</accelDrift>
+           <!--<accelDrift>0.0 0.0 0.0</accelDrift>-->
+           <accelGaussianNoise>0.05 0.05 0.05</accelGaussianNoise>
+           <!--<accelGaussianNoise>0.004 0.004 0.004</accelGaussianNoise>-->
+	    </plugin>
+	  </gazebo>
+
+	  <joint name="${prefix}_magnetic_joint" type="fixed">
+	      <axis xyz="1 0 0"/>
+	      <origin rpy="0 -1.5707963267 1.5707963267" xyz="0 0 0"/>
+	      <parent link="${prefix}_link"/>
+	      <child link="${prefix}_magnetic_link"/>
+	  </joint>
+	
+	  <link name="${prefix}_magnetic_link">
+	      <inertial>
+	        <mass value="0.001"/>
+	        <origin rpy="0 0 0" xyz="0 0 0"/>
+	        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.0001"/>
+	      </inertial>
+	      <visual>
+	        <origin rpy="0 0 0" xyz="0 0 0"/>
+	        <geometry>
+	          <box size="0.001 0.001 0.001"/>
+	        </geometry>
+	      </visual>
+	      <collision>
+	        <origin rpy="0 0 0" xyz="0 0 0"/>
+	        <geometry>
+	          <box size=".001 .001 .001"/>
+	        </geometry>
+	      </collision>
+	  </link>
+
+	<gazebo>
+	    <plugin name="magnetic_controller" filename="libhector_gazebo_ros_magnetic.so">
+	       <alwaysOn>true</alwaysOn>
+	       <topicName>imu/mag</topicName>
+		   <serviceName>imu/mag/service</serviceName>
+		   <bodyName>${prefix}_magnetic_link</bodyName>
+		   <frameId>${prefix}_magnetic_link</frameId>
+	       <updateRate>50.0</updateRate> 
+
+	       <gaussianNoise>0.005 0.005 0.005</gaussianNoise>		
+	       <!-- orientation parameters -->
+		<offset>0.0 0.0 0.0</offset>
+<!--           <offset>0.0 0.0 0.0</offset>-->
+		<magnitude>1.0</magnitude>
+<!--		<magnitude>1.0</magnitude>-->
+				<!-- <referenceHeading>1.5707963267</referenceHeading> -->
+		<referenceHeading>90.0</referenceHeading>
+		<!-- <declination>4.5</declination> -->
+		<declination>20.0</declination>
+		<inclination>60.0</inclination>
+<!--		<inclination>0.0</inclination>-->
+		<drift>0.005 0.005 0.005</drift>
+<!--		<drift>0.001 0.001 0.001</drift>-->
+		<driftFrequency>0.0001 0.0001 0.0001</driftFrequency>
+<!--		<driftFrequency>0.1 0.1 0.1</driftFrequency>-->
+	    </plugin>
+	  </gazebo>
+
+    
+  </xacro:macro>
+
+</robot>
