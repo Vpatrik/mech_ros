@@ -25,6 +25,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Patrik Vavra 2019
+
 import rospy
 import smach
 import smach_ros
@@ -178,6 +180,8 @@ class SimpleNavigation(smach.StateMachine):
         userdata.final_pose = result.final_pose
         if result.outcome == ExePathResult.SUCCESS:
             return 'success'
+        elif result.outcome == ExePathResult.CANCELED:
+            return 'preempted'
         else:
             return 'aborted'
 
