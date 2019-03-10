@@ -80,7 +80,6 @@ class Navigate(smach.StateMachine):
         input_keys=['received_goal', 'charge'])
     def get_path_goal_cb(userdata, goal):
         goal.use_start_pose = False
-        goal.tolerance = 0.2
 
         if userdata.charge.data == True:
             target_pose = PoseStamped()

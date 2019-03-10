@@ -21,7 +21,7 @@ from navigate2station import Navigate2Station
 import tf2_ros
 import tf2_geometry_msgs
 from geometry_msgs.msg import PoseStamped
-
+from std_msgs.msg import Bool
 
 def main():
     rospy.init_node('mbf_state_machine')
@@ -63,7 +63,6 @@ def main():
                         child_termination_cb = child_term_cb,
                         outcome_cb = out_cb)
 
-        cc.userdata.sm_charge = False
 
         with cc:
             smach.Concurrence.add('WAIT_FOR_GOAL',

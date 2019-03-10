@@ -41,6 +41,7 @@ class WaitForGoal(smach.State):
         self.subscriber = None
 
 
+
     def execute(self, user_data):
 
         rospy.loginfo("Waiting for a goal...")
@@ -56,8 +57,9 @@ class WaitForGoal(smach.State):
             return 'preempted'
 
         user_data.target_pose = self.target_pose
-        user_data.charge = Bool()
-        user_data.charge = False
+        charge = Bool()
+        charge.data = False
+        user_data.charge = charge
         pos = self.target_pose.pose.position
         rospy.loginfo("Received goal pose: (%s, %s, %s)", pos.x, pos.y, pos.z)
 
