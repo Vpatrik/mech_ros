@@ -30,7 +30,7 @@
 import rospy
 import smach
 import smach_ros
-
+import dynamic_reconfigure.client
 
 
 from mbf_msgs.msg import ExePathAction
@@ -107,6 +107,7 @@ class SimpleNavigation(smach.StateMachine):
         smach.StateMachine.__init__(self,
             outcomes=['succeeded', 'aborted', 'preempted'],
             input_keys=['recovery_flag'])
+        self.client = None
 
         with self:
             smach.StateMachine.add('GET_PATH',
@@ -139,6 +140,39 @@ class SimpleNavigation(smach.StateMachine):
     @staticmethod
     @smach.cb_interface()
     def get_path_goal_cb(userdata, goal):
+
+        # Dynamicaly reconfigure robot footprint to fit in the charging station
+        client_local_costmap = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap')
+        client_global_costmap = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap')
+        client_local_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap/inflation')
+        client_global_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap/inflation')
+
+        # Original paramateres
+        # /move_base_flex/local_costmap/inflation/footprint [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]
+        # /move_base_flex/local_costmap/inflation/robot_radius 0.46 - probbly not used
+        # /move_base_flex/local_costmap/inflation/cost_scaling_factor 2.55
+        # /move_base_flex/local_costmap/inflation/inflation_radius 0.38
+        # /move_base_flex/local_costmap/inflation/enabled True
+        # /move_base_flex/global_costmap/inflation/footprint [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]
+        # /move_base_flex/global_costmap/inflation/robot_radius 0.46 - probbly not used
+        # /move_base_flex/global_costmap/inflation/cost_scaling_factor 2.55
+        # /move_base_flex/global_costmap/inflation/inflation_radius 0.38
+        # /move_base_flex/global_costmap/inflation/enabled True
+
+        # Probably would be best to disable inflation layer in both costmaps for navigation to plug
+        # and to downscale footprint
+        params_local_footprint = {'footprint' : [[-0.06,-0.05],[-0.06,0.05],[0.06,0.05],[0.06,-0.05]]}
+        params_global_footprint = {'footprint' : [[-0.06,-0.05],[-0.06,0.05],[0.06,0.05],[0.06,-0.05]]}
+        params_local_inflation = {'enabled' : False}
+        params_global_inflation = {'enabled' : False}
+
+
+        config_local_costmap = client_local_costmap.update_configuration(params_local_footprint)
+        config_global_costmap = client_global_costmap.update_configuration(params_global_footprint)
+        config_local_inflation = client_local_costmap_inflation.update_configuration(params_local_inflation)
+        config_global_inflation = client_global_costmap_inflation.update_configuration(params_global_inflation)
+
+        # Set goal in front of plug
         goal.use_start_pose = False
         goal.tolerance = 0.01
         goal.target_pose = PoseStamped()

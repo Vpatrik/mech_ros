@@ -33,6 +33,7 @@ static:
 #    raytrace_range: 3.5
 
 inflation:
+   enabled: True
    inflation_radius: 0.38
    cost_scaling_factor: 2.55
 
