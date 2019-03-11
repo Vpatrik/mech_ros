@@ -41,7 +41,7 @@ class WaitForCharge(smach.State):
 
     def execute(self, user_data):
 
-        rospy.loginfo("Waiting for a goal...")
+        rospy.loginfo("Waiting for a charge...")
         self.signal.clear()
         self.subscriber = rospy.Subscriber('/charge', Bool, self.charge_callback)
         

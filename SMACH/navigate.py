@@ -51,14 +51,15 @@ class Navigate(smach.StateMachine):
             input_keys=['received_goal','charge', 'recovery_flag'])
 
     
-        with self:
+        with self:            
             smach.StateMachine.add('GET_PATH',
                                 smach_ros.SimpleActionState('move_base_flex/get_path',
                                                             GetPathAction,
                                                             goal_cb = Navigate.get_path_goal_cb,
                                                             result_cb = Navigate.get_path_result_cb),
                                 transitions={'success': 'EXE_PATH',
-                                                'aborted': 'aborted'})
+                                                'aborted': 'aborted',
+                                                'preempted': 'preempted'})
 
             smach.StateMachine.add('EXE_PATH',
                                 smach_ros.SimpleActionState('move_base_flex/exe_path',
@@ -67,7 +68,8 @@ class Navigate(smach.StateMachine):
                                                             result_cb = Navigate.ex_path_result_cb),
                                 transitions={'success': 'succeeded',
                                                 'aborted': 'RECOVERY',
-                                                'charging': 'charging'})
+                                                'charging': 'charging',
+                                                'preempted': 'preempted'})
 
             smach.StateMachine.add('RECOVERY',
                                 smach_ros.SimpleActionState('move_base_flex/recovery',
@@ -75,7 +77,8 @@ class Navigate(smach.StateMachine):
                                                             goal_cb = Navigate.recovery_goal_cb,
                                                             result_cb = Navigate.recovery_result_cb),
                                 transitions={'success': 'GET_PATH',
-                                                'aborted': 'aborted'})
+                                                'aborted': 'aborted',
+                                                'preempted': 'preempted'})
 
     @staticmethod
     @smach.cb_interface(
@@ -103,13 +106,15 @@ class Navigate(smach.StateMachine):
     @staticmethod
     @smach.cb_interface(
         output_keys=['outcome', 'message', 'path'],
-        outcomes=['success', 'aborted'])
+        outcomes=['success', 'aborted', 'preempted'])
     def get_path_result_cb(userdata, status, result):
         userdata.message = result.message
         userdata.outcome = result.outcome
         userdata.path = result.path
         if result.outcome == GetPathResult.SUCCESS:
             return 'success'
+        elif result.outcome == GetPathResult.CANCELED:
+            return 'preempted'
         else:
             return 'aborted'
 
@@ -122,7 +127,7 @@ class Navigate(smach.StateMachine):
     @staticmethod
     @smach.cb_interface(input_keys=['charge'],
         output_keys=['outcome', 'message', 'final_pose', 'dist_to_goal'],
-        outcomes=['success', 'aborted', 'charging'])
+        outcomes=['success', 'aborted', 'charging', 'preempted'])
     def ex_path_result_cb(userdata, status, result):
         userdata.message = result.message
         userdata.outcome = result.outcome
@@ -132,7 +137,8 @@ class Navigate(smach.StateMachine):
             if userdata.charge.data == True:
                 return 'charging'
             return 'success'
-
+        elif result.outcome == ExePathResult.CANCELED:
+            return 'preempted'
         else:
             return 'aborted'
 
@@ -150,9 +156,11 @@ class Navigate(smach.StateMachine):
     @staticmethod
     @smach.cb_interface(
         output_keys=['outcome', 'message'],
-        outcomes=['success', 'aborted'])
+        outcomes=['success', 'aborted', 'preempted'])
     def recovery_result_cb(userdata, status, result):
         if result.outcome == RecoveryResult.SUCCESS:
             return 'success'
+        elif result.outcome == RecoveryResult.CANCELED:
+            return 'preempted'
         else:
             return 'aborted'

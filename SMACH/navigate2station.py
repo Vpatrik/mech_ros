@@ -160,6 +160,8 @@ class SimpleNavigation(smach.StateMachine):
         userdata.path = result.path
         if result.outcome == GetPathResult.SUCCESS:
             return 'success'
+        elif result.outcome == GetPathResult.CANCELED:
+            return 'preempted'
         else:
             return 'aborted'
 
@@ -203,5 +205,7 @@ class SimpleNavigation(smach.StateMachine):
     def recovery_result_cb(userdata, status, result):
         if result.outcome == RecoveryResult.SUCCESS:
             return 'success'
+        elif result.outcome == RecoveryResult.CANCELED:
+            return 'preempted'
         else:
             return 'aborted'
