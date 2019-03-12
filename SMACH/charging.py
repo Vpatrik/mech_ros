@@ -16,8 +16,11 @@ from mbf_msgs.msg import RecoveryResult
 
 from wait_for_goal import WaitForGoal
 from wait_for_charge import WaitForCharge
+from wait_for_recharge import WaitForRecharge
+from after_charging import AfterCharging
 from navigate import Navigate
 from navigate2station import Navigate2Station
+from set_solenoid import SetSolenoid
 
 import tf2_ros
 import tf2_geometry_msgs
@@ -31,6 +34,7 @@ def main():
     mbf_sm.userdata.sm_recovery_flag = False
 
     with mbf_sm:
+
 
         # gets called when ANY child state terminates
         def navig_child_term_cb(outcome_map):
@@ -104,13 +108,12 @@ def main():
 
         smach.StateMachine.add('NAVIGATION_LOOP',
                                navig_cc,
-                               transitions={'navigate2charge': 'NAVIGATE_2_STATION', 'loop': 'NAVIGATION_LOOP',
+                               transitions={'navigate2charge': 'NAVIGATE_BEFORE_STATION', 'loop': 'NAVIGATION_LOOP',
                                 'preempted': 'preempted','aborted': 'aborted'},
                                 remapping = {'sm_pose': 'sm_pose', 'sm_charge': 'sm_charge',
                                 'sm_recovery_flag': 'sm_recovery_flag'})
 
-
-        smach.StateMachine.add('NAVIGATE_2_STATION',
+        smach.StateMachine.add('NAVIGATE_BEFORE_STATION',
                                Navigate(),
                                transitions={'succeeded': 'NAVIGATION_LOOP', 'preempted': 'preempted',
                                'aborted': 'aborted','charging': 'NAVIGATE_2_PLUG'},
@@ -119,9 +122,21 @@ def main():
 
         smach.StateMachine.add('NAVIGATE_2_PLUG',
                                Navigate2Station(),
-                               transitions={'succeeded': 'succeeded',
+                               transitions={'succeeded': 'LOCK_SOLENOID',
                                'aborted': 'aborted'},
-                               remapping={'recovery_flag': 'sm_recovery_flag'})
+                               remapping={'recovery_flag': 'sm_recovery_flag', 'charge': 'sm_charge'})
+
+        smach.StateMachine.add('LOCK_SOLENOID',
+                               SetSolenoid(),
+                               transitions={'succeeded': 'CHARGING',
+                                'preempted': 'preempted','aborted': 'aborted'},
+                                remapping = {})
+
+        smach.StateMachine.add('CHARGING',
+                               AfterCharging(),
+                               transitions={'succeeded': 'NAVIGATION_LOOP',
+                                'preempted': 'preempted','aborted': 'aborted'},
+                                remapping = {})
 
 
     # Create and start introspection server

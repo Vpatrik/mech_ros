@@ -52,7 +52,7 @@ class Navigate2Station(smach.Concurrence):
     def __init__(self):
         smach.Concurrence.__init__(self,
             outcomes=['succeeded', 'aborted'],
-            input_keys=['recovery_flag'],
+            input_keys=['recovery_flag', 'charge'],
             output_keys = [],
             default_outcome = 'succeeded',
             child_termination_cb = Navigate2Station.child_term_cb,
@@ -63,7 +63,7 @@ class Navigate2Station(smach.Concurrence):
 
             smach.Concurrence.add('SIMPLE_NAVIGATION',
                             SimpleNavigation(),
-                            remapping={})
+                            remapping={'recovery_flag': 'recovery_flag', 'charge': 'charge'})
 
             smach.Concurrence.add('WAIT_FOR_ENDSTOP',
                             WaitForEndstop(),
@@ -89,12 +89,6 @@ class Navigate2Station(smach.Concurrence):
     # gets called when ALL child states are terminated
     @staticmethod
     def out_cb(outcome_map):
-        # if outcome_map['WAIT_FOR_CHARGE'] == 'charging':
-        #     return 'received_goal'
-        # if outcome_map['WAIT_FOR_GOAL'] == 'received_goal':
-        #     return 'received_goal'
-        # else:
-        #     return 'preempted'
         if outcome_map['WAIT_FOR_ENDSTOP'] == 'endstop_hit':
             return 'succeeded'
         else:
@@ -106,7 +100,7 @@ class SimpleNavigation(smach.StateMachine):
     def __init__(self):
         smach.StateMachine.__init__(self,
             outcomes=['succeeded', 'aborted', 'preempted'],
-            input_keys=['recovery_flag'])
+            input_keys=['recovery_flag', 'charge'])
         self.client = None
 
         with self:
@@ -138,51 +132,66 @@ class SimpleNavigation(smach.StateMachine):
                                                 'preempted': 'preempted'})
 
     @staticmethod
-    @smach.cb_interface()
+    @smach.cb_interface(input_keys=['charge'])
     def get_path_goal_cb(userdata, goal):
 
-        # Dynamicaly reconfigure robot footprint to fit in the charging station
-        client_local_costmap = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap')
-        client_global_costmap = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap')
-        client_local_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap/inflation')
-        client_global_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap/inflation')
+        if userdata.charge.data == True:
+            # Dynamicaly reconfigure robot footprint to fit in the charging station
+            client_local_costmap = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap')
+            client_global_costmap = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap')
+            client_local_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap/inflation')
+            client_global_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap/inflation')
 
-        # Original paramateres
-        # /move_base_flex/local_costmap/inflation/footprint [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]
-        # /move_base_flex/local_costmap/inflation/robot_radius 0.46 - probbly not used
-        # /move_base_flex/local_costmap/inflation/cost_scaling_factor 2.55
-        # /move_base_flex/local_costmap/inflation/inflation_radius 0.38
-        # /move_base_flex/local_costmap/inflation/enabled True
-        # /move_base_flex/global_costmap/inflation/footprint [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]
-        # /move_base_flex/global_costmap/inflation/robot_radius 0.46 - probbly not used
-        # /move_base_flex/global_costmap/inflation/cost_scaling_factor 2.55
-        # /move_base_flex/global_costmap/inflation/inflation_radius 0.38
-        # /move_base_flex/global_costmap/inflation/enabled True
+            # Original paramateres
+            # /move_base_flex/local_costmap/inflation/footprint [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]
+            # /move_base_flex/local_costmap/inflation/robot_radius 0.46 - probbly not used
+            # /move_base_flex/local_costmap/inflation/cost_scaling_factor 2.55
+            # /move_base_flex/local_costmap/inflation/inflation_radius 0.38
+            # /move_base_flex/local_costmap/inflation/enabled True
+            # /move_base_flex/global_costmap/inflation/footprint [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]
+            # /move_base_flex/global_costmap/inflation/robot_radius 0.46 - probbly not used
+            # /move_base_flex/global_costmap/inflation/cost_scaling_factor 2.55
+            # /move_base_flex/global_costmap/inflation/inflation_radius 0.38
+            # /move_base_flex/global_costmap/inflation/enabled True
 
-        # Probably would be best to disable inflation layer in both costmaps for navigation to plug
-        # and to downscale footprint
-        params_local_footprint = {'footprint' : [[-0.06,-0.05],[-0.06,0.05],[0.06,0.05],[0.06,-0.05]]}
-        params_global_footprint = {'footprint' : [[-0.06,-0.05],[-0.06,0.05],[0.06,0.05],[0.06,-0.05]]}
-        params_local_inflation = {'enabled' : False}
-        params_global_inflation = {'enabled' : False}
+            # Probably would be best to disable inflation layer in both costmaps for navigation to plug
+            # and to downscale footprint
+            params_local_footprint = {'footprint' : [[-0.06,-0.05],[-0.06,0.05],[0.06,0.05],[0.06,-0.05]]}
+            params_global_footprint = {'footprint' : [[-0.06,-0.05],[-0.06,0.05],[0.06,0.05],[0.06,-0.05]]}
+            params_local_inflation = {'enabled' : False}
+            params_global_inflation = {'enabled' : False}
 
 
-        config_local_costmap = client_local_costmap.update_configuration(params_local_footprint)
-        config_global_costmap = client_global_costmap.update_configuration(params_global_footprint)
-        config_local_inflation = client_local_costmap_inflation.update_configuration(params_local_inflation)
-        config_global_inflation = client_global_costmap_inflation.update_configuration(params_global_inflation)
+            config_local_costmap = client_local_costmap.update_configuration(params_local_footprint)
+            config_global_costmap = client_global_costmap.update_configuration(params_global_footprint)
+            config_local_inflation = client_local_costmap_inflation.update_configuration(params_local_inflation)
+            config_global_inflation = client_global_costmap_inflation.update_configuration(params_global_inflation)
 
-        # Set goal in front of plug
-        goal.use_start_pose = False
-        goal.tolerance = 0.01
-        goal.target_pose = PoseStamped()
-        goal.target_pose.header.stamp = rospy.Time.now()
-        goal.target_pose.header.frame_id = 'map'
-        goal.target_pose.pose.position.x = -5.3
-        goal.target_pose.pose.position.y = -4.5
-        goal.target_pose.pose.orientation.z = 0.707106781
-        goal.target_pose.pose.orientation.w = 0.707106781
-        goal.planner = 'Charging_station_planner'
+            # Set goal in front of plug
+            goal.use_start_pose = False
+            goal.tolerance = 0.01
+            goal.target_pose = PoseStamped()
+            goal.target_pose.header.stamp = rospy.Time.now()
+            goal.target_pose.header.frame_id = 'map'
+            goal.target_pose.pose.position.x = -5.3
+            goal.target_pose.pose.position.y = -4.5
+            goal.target_pose.pose.orientation.z = 0.707106781
+            goal.target_pose.pose.orientation.w = 0.707106781
+            goal.planner = 'Charging_station_planner'
+
+        else:
+            # Set goal in front of station
+            goal.use_start_pose = False
+            goal.tolerance = 0.01
+            goal.target_pose = PoseStamped()
+            goal.target_pose.header.stamp = rospy.Time.now()
+            goal.target_pose.header.frame_id = 'map'
+            goal.target_pose.pose.position.x = -5.3
+            goal.target_pose.pose.position.y = -3.5
+            goal.target_pose.pose.orientation.z = 0.707106781
+            goal.target_pose.pose.orientation.w = 0.707106781
+            goal.planner = 'Charging_station_planner'
+
 
     @staticmethod
     @smach.cb_interface(
@@ -234,11 +243,31 @@ class SimpleNavigation(smach.StateMachine):
 
     @staticmethod
     @smach.cb_interface(
+        input_keys=['charge'],
         output_keys=['outcome', 'message'],
-        outcomes=['success', 'aborted'])
+        outcomes=['success', 'aborted', 'preempted'])
     def recovery_result_cb(userdata, status, result):
         if result.outcome == RecoveryResult.SUCCESS:
+            if userdata.charge.data == False:
+                # Dynamicaly reconfigure navigation parameters to normal state
+                client_local_costmap = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap')
+                client_global_costmap = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap')
+                client_local_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap/inflation')
+                client_global_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap/inflation')
+
+                params_local_footprint = {'footprint' : [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]}
+                params_global_footprint = {'footprint' : [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]}
+                params_local_inflation = {'enabled' : True}
+                params_global_inflation = {'enabled' : True}
+
+
+                config_local_costmap = client_local_costmap.update_configuration(params_local_footprint)
+                config_global_costmap = client_global_costmap.update_configuration(params_global_footprint)
+                config_local_inflation = client_local_costmap_inflation.update_configuration(params_local_inflation)
+                config_global_inflation = client_global_costmap_inflation.update_configuration(params_global_inflation)
+            
             return 'success'
+
         elif result.outcome == RecoveryResult.CANCELED:
             return 'preempted'
         else:
