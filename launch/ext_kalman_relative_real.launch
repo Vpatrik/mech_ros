@@ -11,11 +11,12 @@
         <param name="base_link_frame" value="mechROS_base_link"/>
         <param name="world_frame" value="mechROS/tf/odom"/>
       
-        <param name="odom0" value="/mechROS/base_control/odom"/>
-        <param name="imu0" value="/imu/data_corrected"/>
+        <param name="odom0" value="/mechROS/odom"/>
+        <!-- <param name="imu0" value="/imu/data_corrected"/> -->
+        <param name="imu0" value="/imu/data"/>
 
         <!-- Use control to predict acceleration -->
-        <param name="use_control" value="true"/>
+        <!-- <param name="use_control" value="true"/>
         <param name="stamped_control" value="false"/>
         <param name="control_timeout" value="0.03"/>
         <rosparam param="control_config">[true,  false, false,
@@ -23,35 +24,35 @@
         <rosparam param="acceleration_limits">[0.4, 0.0, 0.0,
                                        0.0, 0.0, 10.0]</rosparam>
         <rosparam param="decceleration_limits">[1.0, 0.0, 0.0,
-                                       0.0, 0.0, 15.0]</rosparam>
+                                       0.0, 0.0, 15.0]</rosparam> -->
         
         <rosparam param="odom0_config">[false,  false,  false,
                                         false,  false,  false,
                                         true,  true,  false,
                                         false,  false,  true,
                                         false,  false,  false]</rosparam>
+
         <rosparam param="imu0_config">[false,  false,  false,
-                                        false,  false,  true,
+                                        false,  false,  false,
                                         false,  false,  false,
                                         false,  false,  true,
-                                        true,  false,  false]</rosparam>
+                                        false,  false,  false]</rosparam>
         
         
         <param name="odom0_differential" value="false"/>
         <param name="imu0_differential" value="false"/>
         
         <param name="odom0_relative" value="false"/>
-        <param name="imu0_relative" value="false"/>
+        <param name="imu0_relative" value="true"/>
         
-        <param name="odom0_queue_size" value="30"/>
-        <param name="imu0_queue_size" value="30"/>
+        <param name="odom0_queue_size" value="10"/>
+        <param name="imu0_queue_size" value="10"/>
 
         <!-- Thresholdy - otestovat -->
-        <!-- <param name="odomN_twist_rejection_threshold" value="10"/>
-        <param name="imuN_angular_velocity_rejection_threshold" value="10"/>
-        <param name="imuN_linear_acceleration_rejection_threshold" value="10"/> -->
-      
-        <param name="print_diagnostics" value="true"/>
+        <!-- <param name="odomN_twist_rejection_threshold" value="10"/> -->
+        <!-- <param name="imuN_angular_velocity_rejection_threshold" value="10"/> -->
+        <!-- <param name="imuN_linear_acceleration_rejection_threshold" value="10"/> -->
+
       
         <!-- <param name="debug"           value="true"/>
         <param name="debug_out_file"  value="/home/patrik/catkin_ws/src/mech_ros/debug/debug_ekf_rel.txt"/> -->
@@ -62,16 +63,16 @@
         <rosparam param="process_noise_covariance">[0.05, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                                                     0,    0.05, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                                                     0,    0,    0.06, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                                                    0,    0,    0,    0.03, 0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0.03, 0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0.04, 0,     0,     0,    0,    0,    0,    0,    0,    0,
+                                                    0,    0,    0,    0.05, 0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                                                    0,    0,    0,    0,    0.05, 0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0.01, 0,     0,     0,    0,    0,    0,    0,    0,    0,
                                                     0,    0,    0,    0,    0,    0,    0.05, 0,     0,    0,    0,    0,    0,    0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0.05, 0,    0,    0,    0,    0,    0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0.04, 0,    0,    0,    0,    0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0.01, 0,    0,    0,    0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0.01, 0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0.02, 0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0.01, 0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0.07, 0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0.018, 0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0.01, 0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0.015]</rosparam>
       

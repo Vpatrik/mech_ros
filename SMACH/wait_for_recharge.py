@@ -28,17 +28,18 @@ import rospy
 import smach
 import threading
 from std_msgs.msg import Int8
+from std_msgs.msg import Bool
 from geometry_msgs.msg import PoseStamped
 
 class WaitForRecharge(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['charged', 'preempted', 'aborted'], input_keys=[], output_keys=['charge', 'recovery_flag'])
-        self.battery_state = 0
+
         self.signal = threading.Event()
         self.subscriber = None
-        self.filter = 0
-        self.charged = False
+        self.charged = Bool()
+        self.charged.data = False
 
 
 
@@ -51,16 +52,13 @@ class WaitForRecharge(smach.State):
         while not rospy.is_shutdown() and not self.signal.is_set() and not self.preempt_requested():
             rospy.logdebug("Waiting for a battery to be charged...")
             self.signal.wait(1)
-            if self.charged == False:
-                self.signal.clear()
-
 
         if self.preempt_requested() or rospy.is_shutdown():
             self.service_preempt()
             return 'preempted'
 
-
-        user_data.charge = not(self.charged) # Set to not charged because userdata goes to navigation
+        self.charged.data = False # Set to not charged because userdata goes to navigation
+        user_data.charge = self.charged 
         # Navigation smach should be driven by Pose, not by charge signal
         user_data.recovery_flag = False
         rospy.loginfo("Battery charged!")
@@ -68,11 +66,12 @@ class WaitForRecharge(smach.State):
         return 'charged'
 
     def battery_callback(self, msg):
-        self.filter +=1
-        bat = (msg.data + 335) / 100
-        self.battery_state += bat
-        if (self.battery_state/self.filter) > 4.17:
-            self.charged = True
+        rospy.logdebug("Battery signal received")
+        raw_volt_level = msg.data
+        volt_level = (raw_volt_level + 335.0) / 100.0
+        rospy.loginfo("Battery voltage level: %f", volt_level)
+
+        if volt_level > 4.17:
             self.signal.set()
             rospy.logdebug("Battery charged")
 

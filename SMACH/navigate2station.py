@@ -169,7 +169,7 @@ class SimpleNavigation(smach.StateMachine):
 
             # Set goal in front of plug
             goal.use_start_pose = False
-            goal.tolerance = 0.01
+            goal.tolerance = 0.05
             goal.target_pose = PoseStamped()
             goal.target_pose.header.stamp = rospy.Time.now()
             goal.target_pose.header.frame_id = 'map'
@@ -182,7 +182,7 @@ class SimpleNavigation(smach.StateMachine):
         else:
             # Set goal in front of station
             goal.use_start_pose = False
-            goal.tolerance = 0.01
+            goal.tolerance = 0.05
             goal.target_pose = PoseStamped()
             goal.target_pose.header.stamp = rospy.Time.now()
             goal.target_pose.header.frame_id = 'map'
@@ -215,7 +215,7 @@ class SimpleNavigation(smach.StateMachine):
         goal.controller = 'pose_follower'
 
     @staticmethod
-    @smach.cb_interface(
+    @smach.cb_interface(input_keys=['charge'],
         output_keys=['outcome', 'message', 'final_pose', 'dist_to_goal'],
         outcomes=['success', 'aborted'])
     def ex_path_result_cb(userdata, status, result):
@@ -223,7 +223,27 @@ class SimpleNavigation(smach.StateMachine):
         userdata.outcome = result.outcome
         userdata.dist_to_goal = result.dist_to_goal
         userdata.final_pose = result.final_pose
+        rospy.loginfo("Result outcome: %s",str(result.outcome))
         if result.outcome == ExePathResult.SUCCESS:
+
+            if userdata.charge.data == False:
+                # Dynamicaly reconfigure navigation parameters to normal state
+                client_local_costmap = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap')
+                client_global_costmap = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap')
+                client_local_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap/inflation')
+                client_global_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap/inflation')
+
+                params_local_footprint = {'footprint' : [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]}
+                params_global_footprint = {'footprint' : [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]}
+                params_local_inflation = {'enabled' : True}
+                params_global_inflation = {'enabled' : True}
+
+
+                config_local_costmap = client_local_costmap.update_configuration(params_local_footprint)
+                config_global_costmap = client_global_costmap.update_configuration(params_global_footprint)
+                config_local_inflation = client_local_costmap_inflation.update_configuration(params_local_inflation)
+                config_global_inflation = client_global_costmap_inflation.update_configuration(params_global_inflation)
+
             return 'success'
         elif result.outcome == ExePathResult.CANCELED:
             return 'preempted'
@@ -248,24 +268,6 @@ class SimpleNavigation(smach.StateMachine):
         outcomes=['success', 'aborted', 'preempted'])
     def recovery_result_cb(userdata, status, result):
         if result.outcome == RecoveryResult.SUCCESS:
-            if userdata.charge.data == False:
-                # Dynamicaly reconfigure navigation parameters to normal state
-                client_local_costmap = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap')
-                client_global_costmap = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap')
-                client_local_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap/inflation')
-                client_global_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap/inflation')
-
-                params_local_footprint = {'footprint' : [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]}
-                params_global_footprint = {'footprint' : [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]}
-                params_local_inflation = {'enabled' : True}
-                params_global_inflation = {'enabled' : True}
-
-
-                config_local_costmap = client_local_costmap.update_configuration(params_local_footprint)
-                config_global_costmap = client_global_costmap.update_configuration(params_global_footprint)
-                config_local_inflation = client_local_costmap_inflation.update_configuration(params_local_inflation)
-                config_global_inflation = client_global_costmap_inflation.update_configuration(params_global_inflation)
-            
             return 'success'
 
         elif result.outcome == RecoveryResult.CANCELED:

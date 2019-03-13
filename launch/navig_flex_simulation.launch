@@ -76,8 +76,8 @@ output="screen" ns="/mechROS" args="base_control"> </node>
    <!-- Charging -->
 <node pkg="mech_ros" type="charging.py" name="mbf_move_base_action" output="screen"/>
 
-   <!-- SMACH Navigation State Machine -->
-<!-- <node pkg="mech_ros" type="Move_base_SMACH.py" name="mbf_move_base_action" output="screen"/> -->
+   <!-- Charging station -->
+<node pkg="mech_ros" type="charging.py" name="charging_station" output="screen"/>
 
   
 </launch>

@@ -62,11 +62,11 @@ dwa:
 pose_follower:
 # Robot Configuration Parameters
   k_trans: 4.0
-  k_rot: 1.0
+  k_rot: 0.8
 
 # Goal Tolerance Parametes
-  tolerance_trans: 0.05 # within this distance to the goal, finally rotate to the goal heading (also, we've reached our goal only if we're within this dist)
-  tolerance_rot: 0.05 # we've reached our goal only if we're within this angular distance
+  tolerance_trans: 0.1 # within this distance to the goal, finally rotate to the goal heading (also, we've reached our goal only if we're within this dist)
+  tolerance_rot: 0.1 # we've reached our goal only if we're within this angular distance
   tolerance_timeout: 0.05 # we've reached our goal only if we're within range for this long and stopped
   holonomic: false
   samples: 10 # number of samples (scaling factors of our current desired twist) to check the validity of
@@ -79,8 +79,8 @@ pose_follower:
   in_place_trans_vel: 0.0 # if we're rotating in place, go at least this fast to avoid getting stuck
 
 # we're "stopped" if we're going slower than these velocitie
-  trans_stopped_velocity: 0.0001
-  rot_stopped_velocity: 0.001
+  trans_stopped_velocity: 0.01
+  rot_stopped_velocity: 0.01
 
   allow_backwards: true # if this is true, we don't care whether we go backwards or forwards
   turn_in_place_first: false # if this is true, turn in place to face the new goal instead of arcing toward it

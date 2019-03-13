@@ -17,7 +17,6 @@
       <param name="calibrate_imu" value="True" />
       <param name="samples_number" value="1000" />
       <param name="calibrations_file" value="/home/patrik/catkin_ws/src/mech_ros/localization/IMU_calibration.yaml" />
-
   </node>
 
 <!-- IMU Madgwick fusion -->
@@ -40,7 +39,6 @@
     <param name="dev" type="string" value="/dev/input/js0" />
     <param name="deadzone" value="0.01" />
     <param name="autorepeat_rate" value="30" />
-
   </node>
 
  <!-- Axes -->
@@ -48,7 +46,7 @@
 
 
  <!-- Kinematics -->
-  <node pkg="mech_ros" type="Kinematics.py" name="kinematics"/>ll
+  <node pkg="mech_ros" type="Kinematics.py" name="kinematics"/>
 
 <!-- Rosbag recording -->
     <node pkg="rosbag" type="record" name="rosbag_record"

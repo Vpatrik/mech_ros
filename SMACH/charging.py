@@ -122,15 +122,10 @@ def main():
 
         smach.StateMachine.add('NAVIGATE_2_PLUG',
                                Navigate2Station(),
-                               transitions={'succeeded': 'LOCK_SOLENOID',
+                               transitions={'succeeded': 'CHARGING',
                                'aborted': 'aborted'},
                                remapping={'recovery_flag': 'sm_recovery_flag', 'charge': 'sm_charge'})
 
-        smach.StateMachine.add('LOCK_SOLENOID',
-                               SetSolenoid(),
-                               transitions={'succeeded': 'CHARGING',
-                                'preempted': 'preempted','aborted': 'aborted'},
-                                remapping = {})
 
         smach.StateMachine.add('CHARGING',
                                AfterCharging(),
