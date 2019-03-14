@@ -26,20 +26,38 @@ calibration_file = "/home/patrik/catkin_ws/src/mech_ros/map/camCal2.npz"
 
 
 ## Define Aruco Params
+markerLength = 0.1118
 arucoParams = cv2.aruco.DetectorParameters_create()
-arucoParams.minMarkerPerimeterRate = 0.02
-arucoParams.minCornerDistanceRate = 0.04
+
+arucoParams.adaptiveThreshConstant = 7
+arucoParams.adaptiveThreshWinSizeMax = 53
+arucoParams.adaptiveThreshWinSizeMin = 3
+arucoParams.adaptiveThreshWinSizeStep = 4
+
 arucoParams.cornerRefinementMethod = 1
-arucoParams.cornerRefinementMaxIterations = 35
+arucoParams.cornerRefinementMaxIterations = 30
+arucoParams.cornerRefinementMinAccuracy = 0.01
+arucoParams.cornerRefinementWinSize = 5
+
+arucoParams.errorCorrectionRate = 0.6
+arucoParams.minCornerDistanceRate = 0.05
+arucoParams.minMarkerDistanceRate = 0.05
+arucoParams.minMarkerPerimeterRate = 0.1
+arucoParams.maxMarkerPerimeterRate = 4.0
+arucoParams.minOtsuStdDev = 5.0
+arucoParams.perspectiveRemoveIgnoredMarginPerCell = 0.13
+arucoParams.perspectiveRemovePixelPerCell = 8
+arucoParams.polygonalApproxAccuracyRate = 0.01
 arucoParams.markerBorderBits = 1
-arucoParams.maxErroneousBitsInBorderRate = 0.4
+arucoParams.maxErroneousBitsInBorderRate = 0.04
+arucoParams.minDistanceToBorder = 3
+
 
 
 ## Initialization
 markerIds = np.array([])
 markerCorners = np.array([])
 rejectedImgPoints = np.array([])
-markerLength = 0.1118
 axis = np.float32([[markerLength/2,markerLength/2,0], [-markerLength/2,markerLength/2,0], [-markerLength/2,-markerLength/2,0], [markerLength/2,-markerLength/2,0],
                    [markerLength/2,markerLength/2,markerLength],[-markerLength/2,markerLength/2,markerLength],[-markerLength/2,-markerLength/2,markerLength],[markerLength/2,-markerLength/2,markerLength] ])
 

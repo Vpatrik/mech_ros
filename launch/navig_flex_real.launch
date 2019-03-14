@@ -7,7 +7,8 @@
   <arg name="map_file" default="$(find mech_ros)/map/mechLAB_modified.yaml"/>
   <arg name="marker_map_file" default="$(find mech_ros)/map/MechLAB_markers.yaml"/>
   <arg name="prefix" default="mechROS_"/>
-  <arg name="cmd_vel_topic" default="/cmd_vel" />
+  <arg name="controller_cmd_vel_topic" default="/controller/cmd_vel" />
+  <arg name="twist_mux_config" default="$(find mech_ros)/control/twist_mux.yaml"/>
   <arg name="odom_topic" default="/odometry_rel/filtered" />
   <arg name="marker_detector_topic" default="/markers" />
   <arg name="estimated_pose_topic" value="/estimated_pose_markers" />
@@ -86,7 +87,7 @@
     <rosparam file="$(find mech_ros)/navigation/MBFlex/controllers.yaml" command="load" />
     <rosparam file="$(find mech_ros)/navigation/MBFlex/recovery_behaviours.yaml" command="load" />
 
-    <remap from="/cmd_vel" to="$(arg cmd_vel_topic)"/>
+    <remap from="/cmd_vel" to="$(arg controller_cmd_vel_topic)"/>
     <remap from="odom" to="$(arg odom_topic)"/>
 
   </node>
@@ -113,5 +114,12 @@
 
  <!-- Axes -->
   <node pkg="mech_ros" type="Teleop.py" name="teleop"/>
+
+  <!-- Twist mux -->
+<node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
+  <rosparam file="$(arg twist_mux_config)" command="load"/>
+</node>
+
+
   
 </launch>

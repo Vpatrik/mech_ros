@@ -22,7 +22,7 @@ linear = 0
 angular = 1
 
 # Define topics
-publish_twist_topic = "/cmd_vel"
+publish_twist_topic = "/joystick/cmd_vel"
 joy_topic = "/joy"
 
 

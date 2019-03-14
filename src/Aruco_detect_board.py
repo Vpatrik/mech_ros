@@ -35,44 +35,47 @@ frame_id = "/camera"
 # Define calibration filename
 calibration_file = "/home/patrik/catkin_ws/src/mech_ros/Config_ARuco/camera.yaml"
 
+markerLength = 0.088
 
 
 ## Define Aruco Params
 arucoParams = cv2.aruco.DetectorParameters_create()
-arucoParams.minMarkerPerimeterRate = 0.02
-arucoParams.minCornerDistanceRate = 0.04
+
+arucoParams.adaptiveThreshConstant = 7
+arucoParams.adaptiveThreshWinSizeMax = 53
+arucoParams.adaptiveThreshWinSizeMin = 3
+arucoParams.adaptiveThreshWinSizeStep = 4
+
 arucoParams.cornerRefinementMethod = 1
-arucoParams.cornerRefinementMaxIterations = 35
+arucoParams.cornerRefinementMaxIterations = 30
+arucoParams.cornerRefinementMinAccuracy = 0.01
+arucoParams.cornerRefinementWinSize = 5
+
+arucoParams.errorCorrectionRate = 0.6
+arucoParams.minCornerDistanceRate = 0.05
+arucoParams.minMarkerDistanceRate = 0.05
+arucoParams.minMarkerPerimeterRate = 0.1
+arucoParams.maxMarkerPerimeterRate = 4.0
+arucoParams.minOtsuStdDev = 5.0
+arucoParams.perspectiveRemoveIgnoredMarginPerCell = 0.13
+arucoParams.perspectiveRemovePixelPerCell = 8
+arucoParams.polygonalApproxAccuracyRate = 0.01
 arucoParams.markerBorderBits = 1
-arucoParams.maxErroneousBitsInBorderRate = 0.4
-
-# camera_matrix=np.array([[1337.3442041956487, 0.0, 829.6600891797842],[0.0, 1337.5855702824913, 485.17756483016257],[0.0,0.0,1.0]])
-# dist_coeff = np.array([0.1954298919955456, -0.16441936311127164, -0.004914964353264576, -0.00014855354072454622,-1.0316591472028718])
-
+arucoParams.maxErroneousBitsInBorderRate = 0.04
+arucoParams.minDistanceToBorder = 3
 
 
 ## Initialization
 markerIds = np.array([])
 markerCorners = np.array([])
 rejectedImgPoints = np.array([])
-markerLength = 0.088
 axis = np.float32([[markerLength/2,markerLength/2,0], [-markerLength/2,markerLength/2,0], [-markerLength/2,-markerLength/2,0], [markerLength/2,-markerLength/2,0],
                    [markerLength/2,markerLength/2,markerLength],[-markerLength/2,markerLength/2,markerLength],[-markerLength/2,-markerLength/2,markerLength],[markerLength/2,-markerLength/2,markerLength] ])
 
-# Vytvoreni rotacni matice odpovidajici RPY [pi/2,0,pi/2]
-# rot = np.array([[0, -1, 0],
-#                 [0, 0, -1],
-#                 [1, 0, 0]])
-
-# # Matrix for conversion from ROS frame to OpenCV for camera
-# rot_cam = np.array([[  0.0,  0.0,   2.0],
-#  [  -1.0,   0.0,  0.0],
-#  [  0.0,   -1.0,   0.0]])
-
-#  # Matrix for conversion from ROS frame to OpenCV for marker
-# rot_mark = np.array([[  0.0,  0.0,   1.0],
-#  [  1.0,   0.0,  0.0],
-#  [  0.0,   1.0,   0.0]])
+## Initialization for statistics
+marker_pose = np.zeros((50,3))
+board_pose = np.zeros((50,3))
+pose_difference = np.zeros((50,3))
 
 
 # Matrix for conversion from ROS frame to OpenCV in camera
@@ -99,24 +102,6 @@ def load_coefficient(calibration_file):
     #     c_matrix, dist_coeff, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
     # return c_matrix, dist_coeff
 
-
-# Calculates rotation matrix to euler angles - source: https://www.learnopencv.com/rotation-matrix-to-euler-angles/
-# def rotationMatrixToEulerAngles(R) :
-     
-#     sy = math.sqrt(R[0,0] * R[0,0] +  R[1,0] * R[1,0])
-     
-#     singular = sy < 1e-6
- 
-#     if  not singular :
-#         x = math.atan2(R[2,1] , R[2,2])
-#         y = math.atan2(-R[2,0], sy)
-#         z = math.atan2(R[1,0], R[0,0])
-#     else :
-#         x = math.atan2(-R[1,2], R[1,1])
-#         y = math.atan2(-R[2,0], sy)
-#         z = 0
- 
-#     return [x, y, z]
 
 
 _FLOAT_EPS_4 = np.finfo(float).eps * 4.0
@@ -145,33 +130,6 @@ def rotationMatrixToEulerAngles(M, cy_thresh=None):
         y = math.atan2(r13,  cy) # atan2(sin(y), cy)
         x = 0.0
     return [x, y, z]
-
-# def rotationMatrixToEulerAngles(R):
-#     # https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2012/07/euler-angles1.pdf
-#     roll = math.atan2(R[1,2], R[2,2])
-#     pitch = math.atan2(-R[0,2], ((R[0,0]**2+R[0,1]**2)**0.5))
-#     s1 = math.sin(roll)
-#     c1 = math.cos(roll)
-#     yaw = math.atan2((s1*R[2,0]-c1*R[1,0]), (c1*R[1,1] - s1*R[2,1]))
-
-#     return [roll, pitch, yaw]
-
-# def rotationMatrixToEulerAngles(R) :
-#      # TO DO - avoid singularity
-
-#     # pitch = math.asin(R[2,0])
-#     # yaw = math.atan2(R[1,0], R[0,0])
-#     # roll = math.atan2(R[2,1], R[2,2])
-
-#     if R[0,2] > 1:
-#         R[0,2] = 1
-#     elif R[0,2]< -1:
-#         R[0,2] = -1
-#     pitch = math.asin(R[0,2])
-#     yaw = math.atan2(R[0,1], R[0,0])
-#     roll = math.atan2(-R[1,2], R[2,2])
-
-#     return [roll, pitch, yaw]
 
 
 def rotationToQuaternion(M):
@@ -240,6 +198,8 @@ def aruco_detect(camera_matrix, dist_coeff):
     # cap.set(cv2.CAP_PROP_BUFFERSIZE,3)
     # cap.set(cv2.CAP_PROP_SETTINGS,0)
     # cap.set(cv2.CAP_PROP_FOURCC =
+
+    k=0
     
 
     while(cap.isOpened()) and not(rospy.is_shutdown()):
@@ -282,13 +242,6 @@ def aruco_detect(camera_matrix, dist_coeff):
                 Rmat = np.zeros(shape=(3,3))
                 cv2.Rodrigues(rvec[i,0],Rmat)
 
-
-                # # Convert from Opencv frame to ROS frame in camera
-                # R = np.dot(rot_cam, Rmat)
-
-                # # Convert inverted matrix from Opencv frame to ROS frame in marker
-                # R = np.dot(rot_mark, R.transpose())
-
                 # Convert from Opencv frame to ROS frame in camera
                 R = np.dot(R_ROS_O_camera, Rmat)
 
@@ -296,7 +249,6 @@ def aruco_detect(camera_matrix, dist_coeff):
                 R = np.dot(R, R_O_ROS_marker)
 
                 # Convert from Rotation matrix to Euler angles
-                # Euler = rotationMatrixToEulerAngles(R.transpose()) # rotace z kamery do markeru
                 Euler = rotationMatrixToEulerAngles(R.T) # rotace z markeru do kamery
 
                 # Fill Marker orientation vector
@@ -338,7 +290,7 @@ def aruco_detect(camera_matrix, dist_coeff):
                 # frame = draw(frame, markerCorners[i], imgpts)
 
                 # Fill MarkerList with each marker
-                aruco_Marker = Marker()
+                aruco_Marker_b = Marker()
                 # aruco_Marker.id = str(markerIds[0][0])
                 # aruco_Marker.surface = surface
 
@@ -347,11 +299,6 @@ def aruco_detect(camera_matrix, dist_coeff):
                 cv2.Rodrigues(rvec,Rmat)
 
 
-                # # Convert from Opencv frame to ROS frame in camera
-                # R = np.dot(rot_cam, Rmat)
-
-                # # Convert inverted matrix from Opencv frame to ROS frame in marker
-                # R = np.dot(rot_mark, R.transpose())
 
                 # Convert from Opencv frame to ROS frame in camera
                 R = np.dot(R_ROS_O_camera, Rmat)
@@ -360,17 +307,16 @@ def aruco_detect(camera_matrix, dist_coeff):
                 R = np.dot(R, R_O_ROS_marker)
 
                 # Convert from Rotation matrix to Euler angles
-                # Euler = rotationMatrixToEulerAngles(R.transpose()) # rotace z kamery do markeru
-                Euler = rotationMatrixToEulerAngles(R.T) # rotace z markeru do kamery
+                Euler_b = rotationMatrixToEulerAngles(R.T) # rotace z markeru do kamery
 
                
                 # Fill Marker orientation vector
-                aruco_Marker.pose.orientation.y = Euler[2]
-                aruco_Marker.pose.orientation.r = Euler[0]
-                aruco_Marker.pose.orientation.p = Euler[1]
+                aruco_Marker_b.pose.orientation.y = Euler_b[2]
+                aruco_Marker_b.pose.orientation.r = Euler_b[0]
+                aruco_Marker_b.pose.orientation.p = Euler_b[1]
 
                 surface = cv2.contourArea(ch_corners, False)
-                aruco_Marker.surface = surface
+                aruco_Marker_b.surface = surface
                 # Surface - here used for display difference between board ang marker yaw
                 # if marker_yaw is not None:
 
@@ -392,17 +338,38 @@ def aruco_detect(camera_matrix, dist_coeff):
 
 
                 # Coordinate vector of camera position from marker in camera coordinate frame
-                aruco_Marker.pose.position.x = -tvec[2]
-                aruco_Marker.pose.position.y = tvec[0]
-                aruco_Marker.pose.position.z = tvec[1]
+                aruco_Marker_b.pose.position.x = -tvec[2]
+                aruco_Marker_b.pose.position.y = tvec[0]
+                aruco_Marker_b.pose.position.z = tvec[1]
 
                 ## For compatibility with gazebo
-                aruco_Marker.header.stamp = time
+                aruco_Marker_b.header.stamp = time
 
                 # All coordinates are in marker frame
-                aruco_MarkerList_b.markers.append(aruco_Marker)
+                aruco_MarkerList_b.markers.append(aruco_Marker_b)
 
                 board_publisher.publish(aruco_MarkerList_b)
+
+        if k < 50:
+            if len(markerCorners_b) > 0 and len(markerCorners) > 0:
+                yaw_m = Euler[2]
+                # Do mod(yaw_m)
+                yaw_b = Euler_b[2]
+                # Do mod(yaw_b)
+                marker_pose[k,:] = aruco_Marker.pose.position.x,aruco_Marker.pose.position.x, yaw_m
+                board_pose[k,:] = aruco_Marker_b.pose.position.x,aruco_Marker_b.pose.position.x, yaw_b
+                pose_difference = board_pose - marker_pose
+                k +=1
+
+        else:
+            k = 0
+            avg_pose_m = np.mean(marker_pose, axis= 0)
+            avg_pose_b = np.mean(board_pose, axis= 0)
+            avg_diff = np.mean(pose_difference, axis= 0)
+            measur_cov = np.cov(marker_pose,y = None, rowvar=False)
+            diff_cov = np.cov(pose_difference,y = None, rowvar=False)
+
+            
 
             # frame = cv2.flip(frame,0)	
         cv2.imshow('frame',frame)

@@ -368,8 +368,15 @@ if pok.size == 0:
     print(pok)
 
 print(pok[1,0,0])
-nul = np.zeros([3,1])
-print(nul.size)
-print(nul.shape)
-print(nul[2,0])
+nul = np.ones((2,3,3))
+nul[1,1,:] = 2,2,2
+nul2 = np.zeros((2,3,3))
+res = nul - nul2
+sum_nul = sum(nul)
+avg_nul = np.mean(nul, axis= 0)
+print(sum_nul)
+print(avg_nul)
+# print(nul.size)
+# print(nul.shape)
+# print(nul)
 # print(pok)
