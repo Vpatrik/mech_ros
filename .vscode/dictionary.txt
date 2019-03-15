@@ -1,0 +1,15 @@
+Patrik
+Vavra
+rosserial
+rospy
+msgs
+srvs
+smach
+roll
+pitch
+Kalman
+odometry
+arduino
+numpy
+scipy
+printing

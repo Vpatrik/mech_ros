@@ -55,7 +55,7 @@ class Kinematics:
         self.Odom.twist.covariance = cov_twist
 
         # ROS Subscribers and publishers
-        rospy.Subscriber(wheels_vel_topic, Odometry, self.wheels_vel_cb)
+        rospy.Subscriber(wheels_vel_topic, WheelsVelocities, self.wheels_vel_cb)
         self.odom_publisher = rospy.Publisher(odom_topic, Odometry, queue_size=10)
 
                 
@@ -116,5 +116,6 @@ class Kinematics:
 if __name__ == '__main__':
     try:
         SkidSteerKinematics = Kinematics()
+        rospy.spin()
     except rospy.ROSInterruptException:
         pass

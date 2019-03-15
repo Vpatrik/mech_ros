@@ -8,11 +8,16 @@ import yaml
 import rospy
 import cv2
 import math
+import csv
 
 
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from mech_ros_msgs.msg import MarkerList
 from mech_ros_msgs.msg import Marker
+
+filename = "/home/patrik/catkin_ws/src/mech_ros/src/Data.csv"
+filename_cov = "/home/patrik/catkin_ws/src/mech_ros/src/Covariances.csv"
+
 
 # Static transformation from board to marker
 x_tr = 0
@@ -200,7 +205,7 @@ def aruco_detect(camera_matrix, dist_coeff):
     # cap.set(cv2.CAP_PROP_FOURCC =
 
     k=0
-    
+    flag_started = False
 
     while(cap.isOpened()) and not(rospy.is_shutdown()):
         ret, frame = cap.read()
@@ -350,28 +355,48 @@ def aruco_detect(camera_matrix, dist_coeff):
 
                 board_publisher.publish(aruco_MarkerList_b)
 
-        if k < 50:
+        if cv2.waitKey(1) & 0xFF == ord('s'):
+            flag_started = True
+            rospy.loginfo("Measurement started!")
+
+        if k < 50 and flag_started:
             if len(markerCorners_b) > 0 and len(markerCorners) > 0:
-                yaw_m = Euler[2]
-                # Do mod(yaw_m)
-                yaw_b = Euler_b[2]
-                # Do mod(yaw_b)
+                yaw_m = Euler[2] % (2*math.pi)
+                yaw_b = Euler_b[2] % (2*math.pi)
+
                 marker_pose[k,:] = aruco_Marker.pose.position.x,aruco_Marker.pose.position.x, yaw_m
                 board_pose[k,:] = aruco_Marker_b.pose.position.x,aruco_Marker_b.pose.position.x, yaw_b
                 pose_difference = board_pose - marker_pose
                 k +=1
 
-        else:
+        elif k >= 50 and flag_started:
             k = 0
+            flag_started = False
+
             avg_pose_m = np.mean(marker_pose, axis= 0)
             avg_pose_b = np.mean(board_pose, axis= 0)
-            avg_diff = np.mean(pose_difference, axis= 0)
+            avg_diff = np.mean(abs(pose_difference), axis= 0)
             measur_cov = np.cov(marker_pose,y = None, rowvar=False)
             diff_cov = np.cov(pose_difference,y = None, rowvar=False)
 
             
 
-            # frame = cv2.flip(frame,0)	
+            # Write to file
+            # x_m, y_m, Yaw_m, x_b, y_b, Yaw_b, var_meas_x, var_meas_y, var_meas_Yaw, var_err_x, var_err_y, var_err_Yaw
+            row = [avg_pose_m[0],avg_pose_m[1], avg_pose_m[2],avg_pose_b[0],avg_pose_b[1], avg_pose_b[2],
+            measur_cov[0,0],measur_cov[1,1], measur_cov[2,2], diff_cov[0,0], diff_cov[1,1], diff_cov[2,2]]
+
+            with open(filename, 'a') as csvFile:
+                writer = csv.writer(csvFile)
+                writer.writerow(row)
+            csvFile.close()
+
+
+            # Write to file
+            # Matrix_cov_meas, Matrix_cov_err
+            
+
+        # frame = cv2.flip(frame,0)	
         cv2.imshow('frame',frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -380,6 +405,7 @@ def aruco_detect(camera_matrix, dist_coeff):
 
     # rospy.spin()
 
+    csvFile.close()
     cap.release()
     #out.release()
     cv2.destroyAllWindows()

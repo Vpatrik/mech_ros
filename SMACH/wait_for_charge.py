@@ -28,6 +28,7 @@ import rospy
 import smach
 import threading
 from std_msgs.msg import Bool
+from std_msgs.msg import Int8
 from geometry_msgs.msg import PoseStamped
 
 class WaitForCharge(smach.State):
@@ -41,16 +42,13 @@ class WaitForCharge(smach.State):
 
     def execute(self, user_data):
 
-        rospy.loginfo("Waiting for a charge...")
+        rospy.loginfo("Waiting for a low battery voltage...")
         self.signal.clear()
-        self.subscriber = rospy.Subscriber('/charge', Bool, self.charge_callback)
+        self.subscriber = rospy.Subscriber('/volt_battery', Int8, self.volt_callback)
         
         while not rospy.is_shutdown() and not self.signal.is_set() and not self.preempt_requested():
-            rospy.logdebug("Waiting for a charging signal...")
+            rospy.logdebug("Monitoring battery state...")
             self.signal.wait(1)
-            if self.charge.data == False:
-                self.signal.clear()
-
 
         if self.preempt_requested() or rospy.is_shutdown():
             self.service_preempt()
@@ -60,14 +58,18 @@ class WaitForCharge(smach.State):
         target_pose = PoseStamped()
         target_pose.header.frame_id = 'map'
         user_data.target_pose = target_pose
-        rospy.loginfo("Received charge signal")
+        rospy.loginfo("Aborting current state, starting to navigate to charging station!")
 
         return 'charging'
 
-    def charge_callback(self, msg):
-        rospy.logdebug("Received charge signal")
-        self.charge = msg
-        self.signal.set()
+    def volt_callback(self, msg):
+        raw_volt_level = msg.data
+        volt_level = (raw_volt_level + 335.0) / 100.0
+
+        if volt_level < 3.5:
+            rospy.loginfo("Low battery voltage!")
+            self.charge.data = True
+            self.signal.set()
 
 
     def request_preempt(self):

@@ -374,7 +374,7 @@ nul2 = np.zeros((2,3,3))
 res = nul - nul2
 sum_nul = sum(nul)
 avg_nul = np.mean(nul, axis= 0)
-print(sum_nul)
+print(abs(sum_nul))
 print(avg_nul)
 # print(nul.size)
 # print(nul.shape)
