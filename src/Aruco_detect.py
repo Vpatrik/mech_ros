@@ -25,14 +25,14 @@ calibration_file = "/home/patrik/catkin_ws/src/mech_ros/map/camCal2.npz"
 
 
 
-## Define Aruco Params
+## Define Aruco Detector Params
 markerLength = 0.1118
 arucoParams = cv2.aruco.DetectorParameters_create()
 
 arucoParams.adaptiveThreshConstant = 7
-arucoParams.adaptiveThreshWinSizeMax = 53
-arucoParams.adaptiveThreshWinSizeMin = 3
-arucoParams.adaptiveThreshWinSizeStep = 4
+arucoParams.adaptiveThreshWinSizeMax = 35 # default 23
+arucoParams.adaptiveThreshWinSizeMin = 3 # default 3
+arucoParams.adaptiveThreshWinSizeStep = 8 # default 10
 
 arucoParams.cornerRefinementMethod = 1
 arucoParams.cornerRefinementMaxIterations = 30
@@ -40,8 +40,10 @@ arucoParams.cornerRefinementMinAccuracy = 0.01
 arucoParams.cornerRefinementWinSize = 5
 
 arucoParams.errorCorrectionRate = 0.6
-arucoParams.minCornerDistanceRate = 0.05
-arucoParams.minMarkerDistanceRate = 0.05
+arucoParams.minCornerDistanceRate = 0.05 # min distance between marker corners,
+# min. distance[pix] = Perimeter*minCornerDistanceRate
+arucoParams.minMarkerDistanceRate = 0.05 # min distance between corners of different markers,
+# min. distance[pix] = Perimeter(smaller one)*minMarkerDistanceRate
 arucoParams.minMarkerPerimeterRate = 0.1
 arucoParams.maxMarkerPerimeterRate = 4.0
 arucoParams.minOtsuStdDev = 5.0
@@ -171,11 +173,11 @@ def draw(img, corners, imgpts):
 
 ########## TCP ################
 def aruco_detect(camera_matrix, dist_coeff):
-    # cap = cv2.VideoCapture('tcpclientsrc host=mechros2.local port=8080  ! gdpdepay !  rtph264depay ! avdec_h264 ! videoconvert ! appsink sync=false', cv2.CAP_GSTREAMER)
+    cap = cv2.VideoCapture('tcpclientsrc host=mechros1.local port=8080  ! gdpdepay !  rtph264depay ! avdec_h264 ! videoconvert ! appsink sync=false', cv2.CAP_GSTREAMER)
     # cap = cv2.VideoCapture(0)
     # pipe = "tcpclientsrc host=10.42.0.136 port=8080 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! appsink sync=false"
-    pipe = 'tcp://10.42.0.136:8080'
-    cap = cv2.VideoCapture(pipe)
+    # pipe = 'tcp://10.42.0.85:5001'
+    # cap = cv2.VideoCapture(pipe)    
 
     while(cap.isOpened()) and not(rospy.is_shutdown()):
         ret, frame = cap.read()

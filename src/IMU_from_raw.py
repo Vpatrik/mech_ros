@@ -134,12 +134,12 @@ class ImuMagConverter:
 
         ## Multiply each sensor analog value by gain and correct from calibration data
         # Accelerometer
-        self.Imu.linear_acceleration.x = -imu_raw.raw_linear_acceleration.x*self.a_gain*self.gravity - self.acc_bias[0]
+        self.Imu.linear_acceleration.x = -imu_raw.raw_linear_acceleration.x*self.a_gain*self.gravity + self.acc_bias[0]
         self.Imu.linear_acceleration.y = imu_raw.raw_linear_acceleration.y*self.a_gain*self.gravity - self.acc_bias[1]
         self.Imu.linear_acceleration.z = imu_raw.raw_linear_acceleration.z*self.a_gain*self.gravity - self.acc_bias[2]
 
         # Gyroscope
-        self.Imu.angular_velocity.x = -imu_raw.raw_angular_velocity.x*self.g_gain - self.gyr_bias[0]
+        self.Imu.angular_velocity.x = -imu_raw.raw_angular_velocity.x*self.g_gain + self.gyr_bias[0]
         self.Imu.angular_velocity.y = imu_raw.raw_angular_velocity.y*self.g_gain - self.gyr_bias[1]
         self.Imu.angular_velocity.z = imu_raw.raw_angular_velocity.z*self.g_gain - self.gyr_bias[2]
 

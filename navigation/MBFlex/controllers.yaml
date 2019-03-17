@@ -8,22 +8,22 @@ controllers:
 
 dwa:
 # Robot Configuration Parameters
-  max_vel_x: 0.22
-  min_vel_x: -0.22
+  max_vel_x: 0.20
+  min_vel_x: -0.20
 
   max_vel_y: 0.0
   min_vel_y: 0.0
 
 # The velocity when robot is moving in a straight line
-  max_trans_vel:  0.22
+  max_trans_vel:  0.20
   min_trans_vel:  0.05
 
-  max_rot_vel: 3.5
-  min_rot_vel: 0.1
+  max_rot_vel: 1.5
+  min_rot_vel: 0.3
 
   acc_lim_x: 0.4
   acc_lim_y: 0.0
-  acc_lim_theta: 10
+  acc_lim_theta: 5
   acc_lim_trans: 0.4
 
 # Goal Tolerance Parametes

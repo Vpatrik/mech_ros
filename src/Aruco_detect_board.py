@@ -28,8 +28,8 @@ z_tr = 0
 dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_5X5_50)
 dictionary_b = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 # dictionary_b = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
-# board = cv2.aruco.CharucoBoard_create(4,3,0.0633,0.0475,dictionary_b)# Doma
-board = cv2.aruco.CharucoBoard_create(8,5,.034566,.01725,dictionary_b)
+board = cv2.aruco.CharucoBoard_create(4,3,0.0633,0.0475,dictionary_b)# Doma
+# board = cv2.aruco.CharucoBoard_create(8,5,.034566,.01725,dictionary_b)
 # board = cv2.aruco.CharucoBoard_create(3,2,0.0895,0.0714,dictionary_b) # mechlab
 
 # Define topics
@@ -43,13 +43,13 @@ calibration_file = "/home/patrik/catkin_ws/src/mech_ros/Config_ARuco/camera.yaml
 markerLength = 0.088
 
 
-## Define Aruco Params
+## Define Aruco Detector Params
 arucoParams = cv2.aruco.DetectorParameters_create()
 
 arucoParams.adaptiveThreshConstant = 7
-arucoParams.adaptiveThreshWinSizeMax = 53
-arucoParams.adaptiveThreshWinSizeMin = 3
-arucoParams.adaptiveThreshWinSizeStep = 4
+arucoParams.adaptiveThreshWinSizeMax = 35 # default 23
+arucoParams.adaptiveThreshWinSizeMin = 3 # default 3
+arucoParams.adaptiveThreshWinSizeStep = 8 # default 10
 
 arucoParams.cornerRefinementMethod = 1
 arucoParams.cornerRefinementMaxIterations = 30
@@ -57,10 +57,12 @@ arucoParams.cornerRefinementMinAccuracy = 0.01
 arucoParams.cornerRefinementWinSize = 5
 
 arucoParams.errorCorrectionRate = 0.6
-arucoParams.minCornerDistanceRate = 0.05
-arucoParams.minMarkerDistanceRate = 0.05
-arucoParams.minMarkerPerimeterRate = 0.1
-arucoParams.maxMarkerPerimeterRate = 4.0
+# arucoParams.minCornerDistanceRate = 0.05 # min distance between marker corners,
+# min. distance[pix] = Perimeter*minCornerDistanceRate
+# arucoParams.minMarkerDistanceRate = 0.05 # min distance between corners of different markers,
+# min. distance[pix] = Perimeter(smaller one)*minMarkerDistanceRate
+# arucoParams.minMarkerPerimeterRate = 0.1 # min_mark_perim[pix]= max. dimension of image [pix]*minMark-per-Rate
+# arucoParams.maxMarkerPerimeterRate = 4.0
 arucoParams.minOtsuStdDev = 5.0
 arucoParams.perspectiveRemoveIgnoredMarginPerCell = 0.13
 arucoParams.perspectiveRemovePixelPerCell = 8
@@ -68,6 +70,7 @@ arucoParams.polygonalApproxAccuracyRate = 0.01
 arucoParams.markerBorderBits = 1
 arucoParams.maxErroneousBitsInBorderRate = 0.04
 arucoParams.minDistanceToBorder = 3
+
 
 
 ## Initialization
@@ -81,6 +84,7 @@ axis = np.float32([[markerLength/2,markerLength/2,0], [-markerLength/2,markerLen
 marker_pose = np.zeros((50,3))
 board_pose = np.zeros((50,3))
 pose_difference = np.zeros((50,3))
+surface_matrix = np.zeros((50,2))
 
 
 # Matrix for conversion from ROS frame to OpenCV in camera
@@ -92,6 +96,7 @@ R_ROS_O_camera = np.array([[  0.0,  0.0,   1.0],
 R_O_ROS_marker = np.array([[  0.0,  1.0,   0.0],
  [  0.0,   0.0,  1.0],
  [  1.0,   0.0,   0.0]])
+
 
 ## Load coefficients
 def load_coefficient(calibration_file):
@@ -193,9 +198,12 @@ def draw(img, corners, imgpts):
 
 ########## TCP ################
 def aruco_detect(camera_matrix, dist_coeff):
-    # cap = cv2.VideoCapture('tcpclientsrc host=ubiquityrobot port=8080  ! gdpdepay !  rtph264depay ! avdec_h264 ! videoconvert ! appsink sync=false', cv2.CAP_GSTREAMER)
-    cap = cv2.VideoCapture(0)
-    # cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture('tcpclientsrc host=mechros1.local port=8080  ! gdpdepay !  rtph264depay ! avdec_h264 ! videoconvert ! appsink sync=false', cv2.CAP_GSTREAMER)
+    # cap = cv2.VideoCapture(0)
+    # pipe = 'tcp://10.42.0.85:5001'
+    # cap = cv2.VideoCapture(pipe)
+
+
     # cap.set(cv2.CAP_PROP_AUTOFOCUS,0)
     cap.set(cv2.CAP_PROP_FOCUS,0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH,1280)
@@ -212,6 +220,7 @@ def aruco_detect(camera_matrix, dist_coeff):
         # frame = cv2.flip(frame,0)
         time = rospy.Time.now()
         marker_yaw = None
+        ret_b = 0
 
         if ret==True:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -280,15 +289,15 @@ def aruco_detect(camera_matrix, dist_coeff):
 
         if len(markerCorners_b) > 0:
             ret, ch_corners, ch_ids = cv2.aruco.interpolateCornersCharuco(markerCorners_b, markerIds_b, gray, board,camera_matrix, dist_coeff)
-            ret, rvec, tvec = cv2.aruco.estimatePoseCharucoBoard(ch_corners, ch_ids, board, camera_matrix, dist_coeff) # For a single marker
+            ret_b, rvec, tvec = cv2.aruco.estimatePoseCharucoBoard(ch_corners, ch_ids, board, camera_matrix, dist_coeff) # For a single marker
             
-            if ret > 0:
+            if ret_b > 0:
                     # cv2.aruco.drawDetectedMarkers(frame,markerCorners_b, markerIds_b)
                 aruco_MarkerList_b = MarkerList()
                 aruco_MarkerList_b.header.stamp = time
                 aruco_MarkerList_b.header.frame_id = frame_id
 
-                cv2.aruco.drawAxis(frame, camera_matrix, dist_coeff, rvec, tvec, 0.1)
+                #cv2.aruco.drawAxis(frame, camera_matrix, dist_coeff, rvec, tvec, 0.1)
 
                 # frame = cv2.aruco.drawAxis(frame, camera_matrix, dist_coeff, rvec[i], tvec[i], 0.1)
                 # imgpts, jac = cv2.projectPoints(axis, rvec[i], tvec[i], camera_matrix, dist_coeff)
@@ -355,18 +364,20 @@ def aruco_detect(camera_matrix, dist_coeff):
 
                 board_publisher.publish(aruco_MarkerList_b)
 
-        if cv2.waitKey(1) & 0xFF == ord('s'):
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('s'):
             flag_started = True
             rospy.loginfo("Measurement started!")
 
         if k < 50 and flag_started:
-            if len(markerCorners_b) > 0 and len(markerCorners) > 0:
+            if len(markerCorners_b) > 0 and ret_b > 0:
                 yaw_m = Euler[2] % (2*math.pi)
                 yaw_b = Euler_b[2] % (2*math.pi)
 
-                marker_pose[k,:] = aruco_Marker.pose.position.x,aruco_Marker.pose.position.x, yaw_m
-                board_pose[k,:] = aruco_Marker_b.pose.position.x,aruco_Marker_b.pose.position.x, yaw_b
+                marker_pose[k,:] = aruco_Marker.pose.position.x,aruco_Marker.pose.position.y, yaw_m
+                board_pose[k,:] = aruco_Marker_b.pose.position.x,aruco_Marker_b.pose.position.y, yaw_b
                 pose_difference = board_pose - marker_pose
+                surface_matrix[k,:] = aruco_Marker.surface, aruco_Marker_b.surface
                 k +=1
 
         elif k >= 50 and flag_started:
@@ -375,22 +386,25 @@ def aruco_detect(camera_matrix, dist_coeff):
 
             avg_pose_m = np.mean(marker_pose, axis= 0)
             avg_pose_b = np.mean(board_pose, axis= 0)
-            avg_diff = np.mean(abs(pose_difference), axis= 0)
+            avg_surface = np.mean(surface_matrix,axis=0)
+            # avg_diff = np.mean(abs(pose_difference), axis= 0)
             measur_cov = np.cov(marker_pose,y = None, rowvar=False)
-            diff_cov = np.cov(pose_difference,y = None, rowvar=False)
+            # diff_cov = np.cov(pose_difference,y = None, rowvar=False)
+            err_cov = np.sum(pose_difference*pose_difference, axis=0)/50
 
             
 
             # Write to file
             # x_m, y_m, Yaw_m, x_b, y_b, Yaw_b, var_meas_x, var_meas_y, var_meas_Yaw, var_err_x, var_err_y, var_err_Yaw
-            row = [avg_pose_m[0],avg_pose_m[1], avg_pose_m[2],avg_pose_b[0],avg_pose_b[1], avg_pose_b[2],
-            measur_cov[0,0],measur_cov[1,1], measur_cov[2,2], diff_cov[0,0], diff_cov[1,1], diff_cov[2,2]]
+            row = [avg_surface[0], avg_surface[1], avg_pose_m[0],avg_pose_m[1], avg_pose_m[2],avg_pose_b[0],avg_pose_b[1], avg_pose_b[2],
+            measur_cov[0,0],measur_cov[1,1], measur_cov[2,2], err_cov[0,0], err_cov[1,1], err_cov[2,2]]
 
             with open(filename, 'a') as csvFile:
                 writer = csv.writer(csvFile)
                 writer.writerow(row)
             csvFile.close()
 
+            rospy.loginfo("Measurement ended!")
 
             # Write to file
             # Matrix_cov_meas, Matrix_cov_err
@@ -398,7 +412,7 @@ def aruco_detect(camera_matrix, dist_coeff):
 
         # frame = cv2.flip(frame,0)	
         cv2.imshow('frame',frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if key == ord('q'):
             break
 
         # rospy.spin()

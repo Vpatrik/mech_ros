@@ -16,7 +16,7 @@ W = 0.15 # rozchod
 
 # Define scales
 l_scale = -0.22
-a_scale = 3.5
+a_scale = 1.7
 # Define which axes to map
 linear = 0
 angular = 1

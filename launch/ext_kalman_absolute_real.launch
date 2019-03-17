@@ -3,7 +3,7 @@
   <!-- Extended Kalman filter fusion - absolute-->
     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_abs" clear_params="true" >
         <param name="frequency" value="30"/>
-        <param name="sensor_timeout" value="0.1"/>
+        <param name="sensor_timeout" value="0.06"/>
         <param name="two_d_mode" value="true"/>
       
        <!-- Otestovat zpozdeni kamery, tohle vraci filtr do doby, kdy vzniklo mereni -->
@@ -28,9 +28,9 @@
         <rosparam param="control_config">[true,  false, false,
                                   false, false, true]</rosparam>
         <rosparam param="acceleration_limits">[0.4, 0.0, 0.0,
-                                       0.0, 0.0, 10.0]</rosparam>
+                                       0.0, 0.0, 5.0]</rosparam>
         <rosparam param="decceleration_limits">[1.0, 0.0, 0.0,
-                                       0.0, 0.0, 15.0]</rosparam> -->
+                                       0.0, 0.0, 7.5]</rosparam> -->
         
         <rosparam param="odom0_config">[false,  false,  false,
                                         false,  false,  false,
