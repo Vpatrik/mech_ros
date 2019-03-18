@@ -3,22 +3,24 @@ controllers:
 #     type: 'eband_local_planner/EBandPlannerROS'
    - name: 'dwa'
      type: 'dwa_local_planner/DWAPlannerROS'
-   - name: 'pose_follower'
-     type: 'pose_follower/PoseFollower'
+   - name: 'dwa_station'
+     type: 'dwa_local_planner/DWAPlannerROS'
+  #  - name: 'pose_follower'
+  #    type: 'pose_follower/PoseFollower'
 
 dwa:
 # Robot Configuration Parameters
-  max_vel_x: 0.20
-  min_vel_x: -0.20
+  max_vel_x: 0.15
+  min_vel_x: -0.15
 
   max_vel_y: 0.0
   min_vel_y: 0.0
 
 # The velocity when robot is moving in a straight line
-  max_trans_vel:  0.20
+  max_trans_vel:  0.15
   min_trans_vel:  0.05
 
-  max_rot_vel: 1.5
+  max_rot_vel: 1.3
   min_rot_vel: 0.3
 
   acc_lim_x: 0.4
@@ -33,16 +35,16 @@ dwa:
   sim granularity: 0.025
 
 # Forward Simulation Parameters
-  sim_time: 3.0
+  sim_time: 3.5
   vx_samples: 10
-  vy_samples: 0
+  vy_samples: 1
   vth_samples: 20
   controller_frequency: 10.0
 
 # Trajectory Scoring Parameters
-  path_distance_bias: 34.0
+  path_distance_bias: 58
   goal_distance_bias: 20.0
-  occdist_scale: 0.05
+  occdist_scale: 0.25
   forward_point_distance: 0.325
   stop_time_buffer: 0.2
   scaling_speed: 0.25
@@ -58,6 +60,58 @@ dwa:
 
   prune_plan: true
 
+
+dwa_station:
+# Robot Configuration Parameters
+  max_vel_x: 0.1
+  min_vel_x: -0.1
+
+  max_vel_y: 0.0
+  min_vel_y: 0.0
+
+# The velocity when robot is moving in a straight line
+  max_trans_vel:  0.13
+  min_trans_vel:  0.05
+
+  max_rot_vel: 1.3
+  min_rot_vel: 0.3
+
+  acc_lim_x: 0.4
+  acc_lim_y: 0.0
+  acc_lim_theta: 5
+  acc_lim_trans: 0.4
+
+# Goal Tolerance Parametes
+  xy_goal_tolerance: 0.09
+  yaw_goal_tolerance: 0.17
+  latch_xy_goal_tolerance: false
+  sim granularity: 0.025
+
+# Forward Simulation Parameters
+  sim_time: 3
+  vx_samples: 10
+  vy_samples: 0
+  vth_samples: 20
+  controller_frequency: 10.0
+
+# Trajectory Scoring Parameters
+  path_distance_bias: 48.0
+  goal_distance_bias: 20.0
+  occdist_scale: 0.0
+  forward_point_distance: 0.0
+  stop_time_buffer: 0.2
+  scaling_speed: 0.25
+  max_scaling_factor: 0.2
+
+
+# Oscillation Prevention Parameters
+  oscillation_reset_dist: 0.05
+
+# Debugging
+  publish_traj_pc : true
+  publish_cost_grid_pc: true
+
+  prune_plan: true
 
 pose_follower:
 # Robot Configuration Parameters
@@ -85,41 +139,3 @@ pose_follower:
   allow_backwards: true # if this is true, we don't care whether we go backwards or forwards
   turn_in_place_first: false # if this is true, turn in place to face the new goal instead of arcing toward it
   max_heading_diff_before_moving: 0.17 # if turn_in_place_first is true, turn in place if our heading is more than this far from facing the goal location
-
-
-eband:
-  Ctrl_Rate: 20.0
-  bubble_velocity_multiplier: 2.0
-  costmap_weight: 10.0
-  differential_drive: true
-  disallow_hysteresis: false
-  eband_equilibrium_approx_max_recursion_depth: 3
-  eband_equilibrium_relative_overshoot: 0.75
-  eband_external_force_gain: 3.0
-  eband_internal_force_gain: 2.0
-  eband_min_relative_overlap: 0.7
-  eband_significant_force_lower_bound: 0.15
-  eband_tiny_bubble_distance: 0.01
-  eband_tiny_bubble_expansion: 0.01
-  in_place_trans_vel: 0.0
-  k_damp: 3.5
-  k_prop: 4.0
-  marker_lifetime: 0.5
-  max_acceleration: 0.2
-  max_rotational_acceleration: 0.3
-  max_translational_acceleration: 0.4
-  # Lower values for testing with the actual robot.
-  max_vel_lin: 1.1 #0.5 #1.45
-  max_vel_th: 1.2 #0.5 #2.0
-  min_in_place_vel_th: 0.05
-  min_vel_lin: 0.0
-  min_vel_th: 0.0
-  num_iterations_eband_optimization: 4
-  rot_stopped_vel: 0.01
-  rotation_correction_threshold: 0.5
-  rotation_threshold_multiplier: 1.0
-  trans_stopped_vel: 0.01
-  virtual_mass: 100.0
-  xy_goal_tolerance: 0.2
-  yaw_goal_tolerance: 0.2
-  prune_plan: true

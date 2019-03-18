@@ -20,8 +20,8 @@ marker_detector_topic = "/markers"
 frame_id = "front_camera_link"
 
 # Define calibration filename
-# calibration_file = "/home/patrik/catkin_ws/src/mech_ros/Config_ARuco/camera.yaml"
-calibration_file = "/home/patrik/catkin_ws/src/mech_ros/map/camCal2.npz"
+calibration_file = "/home/patrik/catkin_ws/src/mech_ros/Config_ARuco/camera.yaml"
+# calibration_file = "/home/patrik/catkin_ws/src/mech_ros/map/camCal2.npz"
 
 
 
@@ -234,8 +234,8 @@ def aruco_detect(camera_matrix, dist_coeff):
 
                 # Coordinate vector of camera position from marker in camera coordinate frame
                 aruco_Marker.pose.position.x = -tvec[i,0,2]
-                aruco_Marker.pose.position.y = -tvec[i,0,0]
-                aruco_Marker.pose.position.z = tvec[i,0,1]
+                aruco_Marker.pose.position.y = tvec[i,0,0]
+                aruco_Marker.pose.position.z = -tvec[i,0,1]
 
                 ## For compatibility with gazebo
                 aruco_Marker.header.stamp = time

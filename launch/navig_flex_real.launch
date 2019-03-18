@@ -9,6 +9,7 @@
   <arg name="prefix" default="mechROS_"/>
   <arg name="controller_cmd_vel_topic" default="/controller/cmd_vel" />
   <arg name="twist_mux_config" default="$(find mech_ros)/control/twist_mux.yaml"/>
+  <arg name="twist_mux_cmd_vel_topic" default="/cmd_vel"/>
   <arg name="odom_topic" default="/odometry_rel/filtered" />
   <arg name="marker_detector_topic" default="/markers" />
   <arg name="estimated_pose_topic" value="/estimated_pose_markers" />
@@ -29,7 +30,7 @@
     <param name="world_frame" value="enu" />
     <param name="use_magnetic_field_msg" value="false" />
     <param name="use_mag" value="true" />
-    <param name="gain" value="0.08" />
+    <param name="gain" value="0.4" />
     <param name="zeta" value="0.002" />
     <param name="orientation_stddev" value="0.7" />
     <param name="fixed_frame" value="imu_link" />
@@ -65,6 +66,7 @@
    <node pkg="mech_ros" type="Estimated_pose_markers.py"  name="marker_pose_estimator">
     <param name="markers_map" value="$(arg marker_map_file)" />
     <param name="min_covariance" value="0.0001" />
+    <param name="min_surface" value="1800" />
     <param name="marker_detector_topic" value="$(arg marker_detector_topic)" />
     <param name="estimated_pose_topic" value="$(arg estimated_pose_topic)" />
   </node>
@@ -118,6 +120,8 @@
   <!-- Twist mux -->
 <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
   <rosparam file="$(arg twist_mux_config)" command="load"/>
+  <remap from="/cmd_vel_out" to="$(arg twist_mux_cmd_vel_topic)"/>
+
 </node>
 
 

@@ -22,12 +22,12 @@ class PoseEstimator():
         rospy.init_node("Pose_estimator")
 
         # Coefficients for calculating variance from relative pose
-        self.K1 = 1.5e10
-        self.A1 = 3.3
-        self.K2 = 50
-        self.A2 = 2.0
-        self.K3 = 20
-        self.A3 = 1.1
+        self.K1 = 5e10
+        self.A1 = 3.1
+        self.K2 = 8e8
+        self.A2 = 3.05
+        self.K3 = 2e9
+        self.A3 = 3.1
 
         self.valid_marker_flag = False
         self.seq = 0
@@ -42,6 +42,8 @@ class PoseEstimator():
         # ROS parameters
         self.markers_map = rospy.get_param("~markers_map", "/home/patrik/catkin_ws/src/mech_ros/map/muzeum_aruco_markers.yaml")
         self.min_covariance = rospy.get_param("~min_covariance", 0.0001)
+        self.min_surface = rospy.get_param("~min_surface", 1800)
+        self.use_multivariate_gaussian_product = rospy.get_param("~use_multivariate_product", False)
         self.marker_detector_topic = rospy.get_param("~marker_detector_topic", "/markers")
         self.estimated_pose_topic = rospy.get_param("~estimated_pose_topic", "/estimated_pose_markers")
 
@@ -231,7 +233,7 @@ class PoseEstimator():
         matrices_num = Mean_vectors.shape[0]
         mean_vec = zeros([3,1])
 
-        avg_cov = sum(Cov_matrices, axis = 0)/matrices_num
+        avg_cov = sum(Cov_matrices, axis = 0)/(matrices_num**2)
 
         for i in range(matrices_num):
             mean_vec[0,0] += Mean_vectors[i,0,0]/(sum_sigma_x*Cov_matrices[i,0,0])
@@ -253,7 +255,7 @@ class PoseEstimator():
             Marker_id = int(marker.id)
 
             surface = marker.surface
-            if surface < 1300:
+            if surface < self.min_surface:
 
                 # Reshape allocated arrays
                 mean = mean[:-1]
@@ -315,8 +317,10 @@ class PoseEstimator():
             self.seq += 1
             # Compute estimated mean vector and covariance matrix from all measurement
             if mean.shape[0] > 1:
-                # mean_tr, cov_tr = self.multiVariateGaussianProduct(mean, covariances)
-                mean_tr, cov_tr = self.averageMeasurement(mean, covariances)
+                if self.use_multivariate_gaussian_product:
+                    mean_tr, cov_tr = self.multiVariateGaussianProduct(mean, covariances)
+                else:
+                    mean_tr, cov_tr = self.averageMeasurement(mean, covariances)
             else:
                 mean_tr, cov_tr = mean[0], covariances[0]
 

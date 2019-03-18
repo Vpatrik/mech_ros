@@ -18,11 +18,11 @@
         <param name="world_frame" value="map"/>
       
         <param name="odom0" value="/mechROS/odom"/>
-        <!-- <param name="pose0" value="/estimated_pose_markers"/> -->
+        <param name="pose0" value="/estimated_pose_markers"/>
         <param name="imu0" value="/imu/data"/>
 
         <!-- Use control to predict acceleration -->
-        <!-- <param name="use_control" value="true"/>
+        <param name="use_control" value="true"/>
         <param name="stamped_control" value="false"/>
         <param name="control_timeout" value="0.03"/>
         <rosparam param="control_config">[true,  false, false,
@@ -30,7 +30,7 @@
         <rosparam param="acceleration_limits">[0.4, 0.0, 0.0,
                                        0.0, 0.0, 5.0]</rosparam>
         <rosparam param="decceleration_limits">[1.0, 0.0, 0.0,
-                                       0.0, 0.0, 7.5]</rosparam> -->
+                                       0.0, 0.0, 7.5]</rosparam>
         
         <rosparam param="odom0_config">[false,  false,  false,
                                         false,  false,  false,
@@ -44,11 +44,11 @@
                                         false,  false,  true,
                                         false,  false,  false]</rosparam>
 
-        <!-- <rosparam param="pose0_config">[true,  true,  false,
+        <rosparam param="pose0_config">[true,  true,  false,
                                         false,  false,  true,
                                         false,  false,  false,
                                         false,  false,  false,
-                                        false,  false,  false]</rosparam> -->
+                                        false,  false,  false]</rosparam>
         
         
         <param name="odom0_differential" value="false"/>
@@ -57,7 +57,7 @@
         
         <param name="odom0_relative" value="false"/>
         <param name="pose0_relative" value="false"/>
-        <param name="imu0_relative" value="true"/>
+        <!-- <param name="imu0_relative" value="false"/> -->
         
         <param name="odom0_queue_size" value="20"/>
         <param name="pose0_queue_size" value="10"/>
@@ -69,8 +69,9 @@
         <!-- <param name="imu0_angular_velocity_rejection_threshold" value="10"/> -->
         <!-- <param name="imu0_linear_acceleration_rejection_threshold" value="10"/> -->
 
-        <!-- <param name="pose0_rejection_threshold" value="7.815"/> -->
-        <param name="pose0_rejection_threshold" value="3"/>
+        <!-- For p = 0.05 from chi-square distribution for 3 DOF -->
+        <param name="pose0_rejection_threshold" value="7.815"/> 
+
 
       
         <param name="print_diagnostics" value="true"/>
@@ -92,7 +93,7 @@
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0.04, 0,    0,    0,    0,    0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0.01, 0,    0,    0,    0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0.01, 0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0.07, 0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0.05, 0,    0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0.018, 0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0.01, 0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0.015]</rosparam>
@@ -116,12 +117,13 @@
                                                        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    1e-9]</rosparam>
         
             <!-- Initial estimation - delete after testing -->
-        <rosparam param="initial_state">[ 1.5,  0.3,  0.0,
+        <rosparam param="initial_state">[ 2.0,  0.3,  0.0,
                                           0.0,  0.0,  0.0,
                                           0.0,  0.0,  0.0,
                                           0.0,  0.0,  0.0,
                                           0.0,  0.0,  0.0]</rosparam>
     
         <param name="publish_tf" value="true"/>
+        <param name="publish_acceleration" value="true"/>
     </node>
 </launch>

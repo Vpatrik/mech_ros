@@ -1,16 +1,16 @@
 topics:
 - name    : controller
-  topic   : controller/cmd_vel
+  topic   : /controller/cmd_vel
   timeout : 0.5
   priority: 100
 
 - name    : joystick
-  topic   : joystick/cmd_vel
+  topic   : /joystick/cmd_vel
   timeout : 0.1
   priority: 50
 
-locks:
-- name    : Stop
-  topic   : mechROS/emergency_stop
-  timeout : 0.0    
-  priority: 255
+# locks:
+# - name    : Stop
+#   topic   : mechROS/emergency_stop
+#   timeout : 0.0    
+#   priority: 255
