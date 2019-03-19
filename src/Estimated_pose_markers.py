@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
+# Patrik Vavra 2019
+
 import rospy
 import yaml
+import tf2_ros
 
-# import tf2_ros
-
-from geometry_msgs.msg import Quaternion, Transform
+from geometry_msgs.msg import Quaternion, Transform, TransformStamped
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from math import pi, cos, sin, atan2
@@ -20,6 +21,9 @@ class PoseEstimator():
     def __init__(self):
 
         rospy.init_node("Pose_estimator")
+
+        # Transformations
+        self.tfBroadcaster = tf2_ros.TransformBroadcaster()
 
         # Coefficients for calculating variance from relative pose
         self.K1 = 7e10
@@ -44,13 +48,13 @@ class PoseEstimator():
         self.min_covariance = rospy.get_param("~min_covariance", 0.0001)
         self.min_surface = rospy.get_param("~min_surface", 1800)
         self.use_multivariate_gaussian_product = rospy.get_param("~use_multivariate_product", False)
-        self.marker_detector_topic = rospy.get_param("~marker_detector_topic", "/markers")
-        self.estimated_pose_topic = rospy.get_param("~estimated_pose_topic", "/estimated_pose_markers")
+        marker_detector_topic = rospy.get_param("~marker_detector_topic", "/markers")
+        estimated_pose_topic = rospy.get_param("~estimated_pose_topic", "/estimated_pose_markers")
 
 
         # ROS subscribers and publishers
-        rospy.Subscriber(self.marker_detector_topic, MarkerList, self.marker_cb)
-        self.pose_publisher = rospy.Publisher(self.estimated_pose_topic, PoseWithCovarianceStamped, queue_size=10)
+        rospy.Subscriber(marker_detector_topic, MarkerList, self.marker_cb)
+        self.pose_publisher = rospy.Publisher(estimated_pose_topic, PoseWithCovarianceStamped, queue_size=10)
         
         # Load markers map
         self.landmarks = {}
@@ -270,8 +274,6 @@ class PoseEstimator():
                 covariances = covariances[:-1]
                 continue
             
-
-
             # Check if marker is in dictionary
             if not(any(Marker_id == key for key in self.landmarks)):
                 # Reshape allocated arrays
@@ -279,7 +281,22 @@ class PoseEstimator():
                 covariances = covariances[:-1]
                 continue
 
+            # Publish transformations from camera to markers for visualization
+            t = TransformStamped()
+            t.child_frame_id = "marker_" + marker.id
+            t.header.frame_id = Markers.header.frame_id
+            t.header.stamp = time
+            # Have to be inverted translation - because of the way Aruco_detect.py transform initial vector
+            t.transform.translation.x = -marker.pose.position.x
+            t.transform.translation.y = -marker.pose.position.y
+            t.transform.translation.z = marker.pose.position.z
 
+            q_convert = quaternion_from_euler(-marker.pose.orientation.r,-marker.pose.orientation.p, -marker.pose.orientation.y)
+            quat = Quaternion(*q_convert)
+            t.transform.rotation = quat
+            self.tfBroadcaster.sendTransform(t)
+
+            rospy.logdebug("Marker # %s spotted",Marker_id)
 
             self.valid_marker_flag = True
             x_m = marker.pose.position.x - 0.088
