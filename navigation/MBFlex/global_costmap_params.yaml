@@ -8,4 +8,5 @@ global_costmap:
   transform_tolerance: 0.5
 
   static_map: true
+  resolution: 0.025
  

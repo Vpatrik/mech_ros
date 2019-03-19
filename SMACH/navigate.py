@@ -92,16 +92,16 @@ class Navigate(smach.StateMachine):
             target_pose.header.frame_id = 'map'
 
             # Simulation
-            target_pose.pose.position.x = -5.3
-            target_pose.pose.position.y = -3.5
-            target_pose.pose.orientation.z = 0.707106781
-            target_pose.pose.orientation.w = 0.707106781
-
-            # Real robot
-            # target_pose.pose.position.x = 2.2
-            # target_pose.pose.position.y = 0.085
+            # target_pose.pose.position.x = -5.3
+            # target_pose.pose.position.y = -3.5
             # target_pose.pose.orientation.z = 0.707106781
             # target_pose.pose.orientation.w = 0.707106781
+
+            # Real robot
+            target_pose.pose.position.x = 2.2
+            target_pose.pose.position.y = 0.085
+            target_pose.pose.orientation.z = 0.707106781
+            target_pose.pose.orientation.w = 0.707106781
 
             goal.target_pose = target_pose
             goal.planner = 'Normal_planner'

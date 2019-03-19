@@ -22,12 +22,12 @@ class PoseEstimator():
         rospy.init_node("Pose_estimator")
 
         # Coefficients for calculating variance from relative pose
-        self.K1 = 5e10
-        self.A1 = 3.1
-        self.K2 = 8e8
-        self.A2 = 3.05
-        self.K3 = 2e9
-        self.A3 = 3.1
+        self.K1 = 7e10
+        self.A1 = 3.22
+        self.K2 = 9.5e8
+        self.A2 = 3.18
+        self.K3 = 4e9
+        self.A3 = 3.19
 
         self.valid_marker_flag = False
         self.seq = 0
@@ -355,5 +355,9 @@ class PoseEstimator():
 
 
 if __name__ == '__main__':
-    poseEstimator = PoseEstimator()
-    rospy.spin()
+    try:
+        poseEstimator = PoseEstimator()
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass
+    

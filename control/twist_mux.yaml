@@ -9,8 +9,13 @@ topics:
   timeout : 0.1
   priority: 50
 
-# locks:
-# - name    : Stop
-#   topic   : mechROS/emergency_stop
-#   timeout : 0.0    
-#   priority: 255
+- name    : station
+  topic   : /station/cmd_vel
+  timeout : 0.1
+  priority: 150
+
+locks:
+- name    : Stop
+  topic   : mechROS/emergency_stop
+  timeout : 0.0    
+  priority: 255

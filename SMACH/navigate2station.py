@@ -175,16 +175,17 @@ class SimpleNavigation(smach.StateMachine):
             goal.target_pose.header.frame_id = 'map'
 
             # Simulation
-            goal.target_pose.pose.position.x = -5.3
-            goal.target_pose.pose.position.y = -4.5
-            goal.target_pose.pose.orientation.z = 0.707106781
-            goal.target_pose.pose.orientation.w = 0.707106781
-
-            # Real robot
-            # goal.target_pose.pose.position.x = 2.2
-            # goal.target_pose.pose.position.y = -1.425
+            # goal.target_pose.pose.position.x = -5.3
+            # goal.target_pose.pose.position.y = -4.5
             # goal.target_pose.pose.orientation.z = 0.707106781
             # goal.target_pose.pose.orientation.w = 0.707106781
+
+            # Real robot
+            goal.target_pose.pose.position.x = 2.17
+            # goal.target_pose.pose.position.y = -1.425
+            goal.target_pose.pose.position.y = -1.45
+            goal.target_pose.pose.orientation.z = 0.707106781
+            goal.target_pose.pose.orientation.w = 0.707106781
 
             goal.planner = 'Charging_station_planner'
 
@@ -197,16 +198,16 @@ class SimpleNavigation(smach.StateMachine):
             goal.target_pose.header.frame_id = 'map'
 
             # Simulation
-            goal.target_pose.pose.position.x = -5.3
-            goal.target_pose.pose.position.y = -3.5
-            goal.target_pose.pose.orientation.z = 0.707106781
-            goal.target_pose.pose.orientation.w = 0.707106781
+            # goal.target_pose.pose.position.x = -5.3
+            # goal.target_pose.pose.position.y = -3.5
+            # goal.target_pose.pose.orientation.z = 0.707106781
+            # goal.target_pose.pose.orientation.w = 0.707106781
 
             # Real robot
-            # target_pose.pose.position.x = 2.2
-            # target_pose.pose.position.y = 0.085
-            # target_pose.pose.orientation.z = 0.707106781
-            # target_pose.pose.orientation.w = 0.707106781
+            goal.target_pose.pose.position.x = 2.2
+            goal.target_pose.pose.position.y = 0.085
+            goal.target_pose.pose.orientation.z = 0.707106781
+            goal.target_pose.pose.orientation.w = 0.707106781
 
             goal.planner = 'Charging_station_planner'
 
@@ -231,6 +232,7 @@ class SimpleNavigation(smach.StateMachine):
     def ex_path_goal_cb(userdata, goal):
         goal.path = userdata.path
         goal.controller = 'dwa_station'
+        # goal.controller = 'pose_follower'
 
     @staticmethod
     @smach.cb_interface(input_keys=['charge'],

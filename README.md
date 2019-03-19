@@ -10,7 +10,8 @@
 ## Created map of laboratory using SLAM
 ### Working features in real world:
  - SLAM
- - Localization - currently in progress
+ - Localization
+ - Navigation
 
 ## Robot sensors:
  - RPi camera

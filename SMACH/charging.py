@@ -21,6 +21,7 @@ from after_charging import AfterCharging
 from navigate import Navigate
 from navigate2station import Navigate2Station
 from set_solenoid import SetSolenoid
+from stop_robot import PublishVelocity
 
 import tf2_ros
 import tf2_geometry_msgs
@@ -122,10 +123,15 @@ def main():
 
         smach.StateMachine.add('NAVIGATE_2_PLUG',
                                Navigate2Station(),
-                               transitions={'succeeded': 'CHARGING',
+                               transitions={'succeeded': 'STOP_ROBOT',
                                'aborted': 'aborted'},
                                remapping={'recovery_flag': 'sm_recovery_flag', 'charge': 'sm_charge'})
 
+        smach.StateMachine.add('STOP_ROBOT',
+                               PublishVelocity(),
+                               transitions={'robot_stopped': 'CHARGING',
+                               'preempted': 'preempted'},
+                               remapping={})
 
         smach.StateMachine.add('CHARGING',
                                AfterCharging(),

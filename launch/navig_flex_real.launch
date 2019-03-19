@@ -67,6 +67,7 @@
     <param name="markers_map" value="$(arg marker_map_file)" />
     <param name="min_covariance" value="0.0001" />
     <param name="min_surface" value="1800" />
+    <param name="use_multivariate_product" value="false" />
     <param name="marker_detector_topic" value="$(arg marker_detector_topic)" />
     <param name="estimated_pose_topic" value="$(arg estimated_pose_topic)" />
   </node>

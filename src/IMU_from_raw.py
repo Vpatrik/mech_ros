@@ -163,6 +163,8 @@ class ImuMagConverter:
 
 
 if __name__ == '__main__':
-
-    imu_mag_converter = ImuMagConverter()
-    rospy.spin()
+    try:
+        imu_mag_converter = ImuMagConverter()
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass

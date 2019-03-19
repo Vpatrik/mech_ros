@@ -41,8 +41,8 @@ Charging_station_planner:                                  # Also see: http://wi
   publish_scale: 100                            # Scale by which the published potential gets multiplied, default 100
   planner_costmap_publish_frequency: 0.0        # default 0.0
   
-  lethal_cost: 254                              # default 253
+  lethal_cost: 256                              # default 253
   neutral_cost: 60                              # default 50
-  cost_factor: 0.50                              # Factor to multiply each cost from costmap by, default 3.0
+  cost_factor: 0.0                              # Factor to multiply each cost from costmap by, default 3.0
   publish_potential: true                       # Publish Potential Costmap (this is not like the navfn pointcloud2 potential), default true
-  orientation_mode: 2
+  orientation_mode: 4
