@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /TF1/Frames1
+        - /TF1/Tree1
         - /Map1/Position1
         - /PoseFromMarkers1/Covariance1
         - /PoseFromMarkers1/Covariance1/Position1
@@ -129,7 +130,7 @@ Visualization Manager:
       Visual Enabled: true
     - Class: rviz/TF
       Enabled: true
-      Frame Timeout: 15
+      Frame Timeout: 5
       Frames:
         All Enabled: false
         Inertia:
@@ -149,16 +150,26 @@ Visualization Manager:
         imu_magnetic_link:
           Value: false
         laser_base_link:
-          Value: true
+          Value: false
         laser_link:
-          Value: true
+          Value: false
         map:
+          Value: true
+        marker_0:
+          Value: true
+        marker_10:
+          Value: true
+        marker_30:
+          Value: true
+        marker_7:
+          Value: true
+        marker_8:
           Value: true
         mechROS/tf/odom:
           Value: true
         mechROS_base_link:
-          Value: true
-      Marker Scale: 0.600000024
+          Value: false
+      Marker Scale: 2
       Name: TF
       Show Arrows: true
       Show Axes: true
@@ -174,7 +185,16 @@ Visualization Manager:
               back_right_wheel:
                 {}
               front_camera_link:
-                {}
+                marker_0:
+                  {}
+                marker_10:
+                  {}
+                marker_30:
+                  {}
+                marker_7:
+                  {}
+                marker_8:
+                  {}
               front_left_wheel:
                 {}
               front_right_wheel:
@@ -439,7 +459,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.7496376
+      Distance: 10.0094595
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -477,5 +497,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1855
-  X: 65
+  X: 1985
   Y: 24

@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+
+# Tutorial from wiki.ros.org
+
 import roslib; roslib.load_manifest('smach')
 roslib.load_manifest('smach_ros')
 import rospy

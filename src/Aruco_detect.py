@@ -80,18 +80,18 @@ R_O_ROS_marker = np.array([[  0.0,  1.0,   0.0],
 ## Load coefficients
 def load_coefficient(calibration_file):
 
-    # with open(calibration_file) as stream:
-    #     try:
-    #         data_loaded = yaml.load(stream)
-    #         c_matrix = np.array(data_loaded["camera_matrix"]["data"]).reshape((3,3))
-    #         dist_coeff = np.array(data_loaded["distortion_coefficients"]["data"])
-    #         return c_matrix, dist_coeff
-    #     except yaml.YAMLError as exc:
-    #         print(exc)
+    with open(calibration_file) as stream:
+        try:
+            data_loaded = yaml.load(stream)
+            c_matrix = np.array(data_loaded["camera_matrix"]["data"]).reshape((3,3))
+            dist_coeff = np.array(data_loaded["distortion_coefficients"]["data"])
+            return c_matrix, dist_coeff
+        except yaml.YAMLError as exc:
+            print(exc)
 
-    with np.load(calibration_file) as X:
-        c_matrix, dist_coeff, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
-    return c_matrix, dist_coeff
+    # with np.load(calibration_file) as X:
+    #     c_matrix, dist_coeff, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
+    # return c_matrix, dist_coeff
 
 _FLOAT_EPS_4 = np.finfo(float).eps * 4.0
 
@@ -173,7 +173,7 @@ def draw(img, corners, imgpts):
 
 ########## TCP ################
 def aruco_detect(camera_matrix, dist_coeff):
-    cap = cv2.VideoCapture('tcpclientsrc host=mechros1.local port=8080  ! gdpdepay !  rtph264depay ! avdec_h264 ! videoconvert ! appsink sync=false', cv2.CAP_GSTREAMER)
+    cap = cv2.VideoCapture('tcpclientsrc host=mechros2.local port=8080  ! gdpdepay !  rtph264depay ! avdec_h264 ! videoconvert ! appsink sync=false', cv2.CAP_GSTREAMER)
     # cap = cv2.VideoCapture(0)
     # pipe = "tcpclientsrc host=10.42.0.136 port=8080 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! appsink sync=false"
     # pipe = 'tcp://10.42.0.85:5001'

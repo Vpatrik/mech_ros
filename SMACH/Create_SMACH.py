@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Tutorial from wiki.ros.org
+
 import rospy
 import smach
 import smach_ros

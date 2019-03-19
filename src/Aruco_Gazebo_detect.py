@@ -22,7 +22,7 @@ dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
 # Define topics
 marker_detector_topic = "/markers"
 image_topic = "/pi_camera/image_raw"
-frame_id = "/camera"
+frame_id = "front_camera_link"
 
 # Define calibration filename
 # calibration_file = "/home/patrik/catkin_ws/src/mech_ros/Config_ARuco/camera.yaml"

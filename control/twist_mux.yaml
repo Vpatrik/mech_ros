@@ -14,6 +14,11 @@ topics:
   timeout : 0.1
   priority: 150
 
+- name    : follower
+  topic   : /marker_follower/cmd_vel
+  timeout : 0.1
+  priority: 40
+
 locks:
 - name    : Stop
   topic   : mechROS/emergency_stop

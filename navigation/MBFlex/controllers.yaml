@@ -35,7 +35,7 @@ dwa:
   sim granularity: 0.025
 
 # Forward Simulation Parameters
-  sim_time: 3.5
+  sim_time: 2.9
   vx_samples: 10
   vy_samples: 1
   vth_samples: 20
@@ -52,7 +52,7 @@ dwa:
 
 
 # Oscillation Prevention Parameters
-  oscillation_reset_dist: 0.05
+  oscillation_reset_dist: 0.1
 
 # Debugging
   publish_traj_pc : true
@@ -78,7 +78,7 @@ dwa_station:
 
   acc_lim_x: 0.4
   acc_lim_y: 0.0
-  acc_lim_theta: 5
+  acc_lim_theta: 4
   acc_lim_trans: 0.4
 
 # Goal Tolerance Parametes
@@ -88,11 +88,11 @@ dwa_station:
   sim granularity: 0.025
 
 # Forward Simulation Parameters
-  sim_time: 1.8
+  sim_time: 4.5
   vx_samples: 10
   vy_samples: 0
   vth_samples: 20
-  controller_frequency: 10.0
+  controller_frequency: 0.5
 
 # Trajectory Scoring Parameters
   path_distance_bias: 100.0

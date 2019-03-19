@@ -99,7 +99,7 @@ class Navigate(smach.StateMachine):
 
             # Real robot
             target_pose.pose.position.x = 2.2
-            target_pose.pose.position.y = 0.085
+            target_pose.pose.position.y = -0.215
             target_pose.pose.orientation.z = 0.707106781
             target_pose.pose.orientation.w = 0.707106781
 

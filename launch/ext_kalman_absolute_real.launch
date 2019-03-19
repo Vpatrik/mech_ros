@@ -2,14 +2,14 @@
  
   <!-- Extended Kalman filter fusion - absolute-->
     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_abs" clear_params="true" >
-        <param name="frequency" value="30"/>
-        <param name="sensor_timeout" value="0.06"/>
+        <param name="frequency" value="50"/>
+        <param name="sensor_timeout" value="0.03"/>
         <param name="two_d_mode" value="true"/>
       
        <!-- Otestovat zpozdeni kamery, tohle vraci filtr do doby, kdy vzniklo mereni -->
         <param name="smooth_lagged_data" value="true"/>
         <!-- Jak dlouho bude system uchovavat svoje informace kvuli zpozdeni senzoru -->
-        <param name="history_length" value="0.3"/>
+        <param name="history_length" value="0.1"/>
 
 
         <param name="map_frame" value="map"/>
@@ -22,15 +22,15 @@
         <param name="imu0" value="/imu/data"/>
 
         <!-- Use control to predict acceleration -->
-        <param name="use_control" value="true"/>
+        <!-- <param name="use_control" value="true"/>
         <param name="stamped_control" value="false"/>
-        <param name="control_timeout" value="0.03"/>
-        <rosparam param="control_config">[true,  false, false,
-                                  false, false, true]</rosparam>
+        <param name="control_timeout" value="0.02"/>
+        <rosparam param="control_config">[false,  false, false,
+                                  false, false, false]</rosparam>
         <rosparam param="acceleration_limits">[0.4, 0.0, 0.0,
                                        0.0, 0.0, 5.0]</rosparam>
         <rosparam param="decceleration_limits">[1.0, 0.0, 0.0,
-                                       0.0, 0.0, 7.5]</rosparam>
+                                       0.0, 0.0, 7.5]</rosparam> -->
         
         <rosparam param="odom0_config">[false,  false,  false,
                                         false,  false,  false,
@@ -76,12 +76,9 @@
       
         <param name="print_diagnostics" value="true"/>
       
-        <!-- <param name="debug"           value="true"/>
-        <param name="debug_out_file"  value="/home/patrik/catkin_ws/src/mech_ros/debug/debug_ekf_abs.txt"/> -->
+        <param name="debug"           value="true"/>
+        <param name="debug_out_file"  value="/home/patrik/catkin_ws/src/mech_ros/debug/debug_ekf_abs.txt"/>
       
-        <!-- <rosparam param="control_config">[true,  false, false,
-                                  false, false, true]</rosparam> -->
-
         <rosparam param="process_noise_covariance">[0.05, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                                                     0,    0.05, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                                                     0,    0,    0.06, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
@@ -93,8 +90,8 @@
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0.04, 0,    0,    0,    0,    0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0.01, 0,    0,    0,    0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0.01, 0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0.05, 0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0.018, 0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0.09, 0,    0,    0,
+                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0.011, 0,    0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0.01, 0,
                                                     0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0.015]</rosparam>
       
