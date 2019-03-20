@@ -19,6 +19,7 @@ devel_isolated/
 
 /bag_files
 *.csv
+/debug
 
 =======
 >>>>>>> 12c246737d7792044d6ff608b41f9b1b2d2f9d82
