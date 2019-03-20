@@ -72,7 +72,8 @@ class Follow:
         self.min_dist = rospy.get_param("~min_dist", 0.4)
 
         # Maximum distance a fiducial can be away for us to attempt to follow
-        self.max_dist = rospy.get_param("~max_dist", 4.0)
+        self.max_dist = rospy.get_param("~max_dist", 3.5)
+
 
         # Proportion of angular error to use as angular velocity
         self.angular_rate = rospy.get_param("~angular_rate", 2.0)
