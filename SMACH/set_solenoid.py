@@ -10,7 +10,7 @@ from smach_ros import ServiceState
 from std_srvs.srv import Trigger
 from std_srvs.srv import TriggerRequest
 from std_srvs.srv import TriggerResponse
-from geometry_msgs.msg import PoseStamped
+
 
 
 class SetSolenoid(smach.StateMachine):

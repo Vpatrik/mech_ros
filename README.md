@@ -1,25 +1,37 @@
 # Diploma thesis
+This repository contains ROS based software part of the project.
 
-## Created robot model in Gazebo, created Gazebo world
+## Simulation - Created simulation environment in Gazebo, URDF robot model
+
 ### Working features in Gazebo:
  - Localization using fiducials
  - SLAM
  - Navigation - use of move_base_flex
- - Charging cycle - use of SMACH
+ - Whole robot charging cycle - use of SMACH
 
-## Created map of laboratory using SLAM
+## Real robot - Currently testing procedures in laboratory
+
 ### Working features in real world:
  - SLAM
  - Localization
  - Navigation
+ - Following marker
 
-## Robot sensors:
+## Description of robot:
+
+### Sensors:
  - RPi camera
  - LIDAR - only for SLAM
  - 9DOF IMU
  - 4 Wheel encoders
 
-## Robot's kinematics:
- - 4 Wheel Skid Steer 
+### Hardware:
+ - Raspberry Pi 3B+
+ - Custom PCB with Arduino SAMD Zero
+ - Working station PC - Ubuntu
+
+## Mechanics:
+ - 4 Wheel Skid Steer
+ - Front servo gripper
 
 

@@ -1,156 +1,109 @@
 #!/usr/bin/env python
 
+
+## Copyright (c) 2018, Sebastian Putz
+# All rights reserved.
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 # Patrik Vavra 2019
 
 import rospy
 import smach
 import smach_ros
 
-
-from mbf_msgs.msg import ExePathAction
-from mbf_msgs.msg import ExePathResult
-from mbf_msgs.msg import GetPathAction
-from mbf_msgs.msg import GetPathResult
-from mbf_msgs.msg import RecoveryAction
-from mbf_msgs.msg import RecoveryResult
-
-from wait_for_goal import WaitForGoal
-from wait_for_charge import WaitForCharge
+from navigate2station import SimpleNavigation
 from wait_for_recharge import WaitForRecharge
-from after_charging import AfterCharging
-from navigate import Navigate
-from navigate2station import Navigate2Station
-from set_solenoid import SetSolenoid
-from stop_robot import PublishVelocity
+from send_velocity_command import PublishVelocity
 
-import tf2_ros
-import tf2_geometry_msgs
 from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
 
-def main():
-    rospy.init_node('mbf_state_machine')
+from smach_ros import ServiceState
+from std_srvs.srv import Trigger
+from std_srvs.srv import TriggerRequest
+from std_srvs.srv import TriggerResponse
 
-    mbf_sm = smach.StateMachine(outcomes=['preempted', 'succeeded', 'aborted'])
-    mbf_sm.userdata.sm_recovery_flag = False
+class Charging(smach.StateMachine):
+    def __init__(self):
+        smach.StateMachine.__init__(self,
+            outcomes=['succeeded', 'preempted', 'aborted'],
+            input_keys=[])
 
-    with mbf_sm:
+        # Initialize velocity command
+        cmd_vel = Twist()
+        cmd_vel.linear.x = -0.05
+        cmd_vel.angular.z = 0
 
+        with self:
+            smach.StateMachine.add('WAIT_FOR_RECHARGE',
+                                WaitForRecharge(),
+                                transitions={'charged': 'MOVE_BACKWARDS',
+                                    'preempted': 'preempted','aborted': 'aborted'},
+                                    remapping = { 'pose': 'sm_pose', 'charge': 'sm_charge',
+                                    'recovery': 'sm_recovery_flag'})
 
-        # gets called when ANY child state terminates
-        def navig_child_term_cb(outcome_map):
+            smach.StateMachine.add('MOVE_BACKWARDS',
+                                PublishVelocity(cmd_vel),
+                                transitions={'velocity_published': 'UNLOCK_SOLENOID',
+                                    'preempted': 'preempted'},
+                                    remapping = {})                                    
 
-            # terminate all running states if WAIT_FOR_CHARGE finished with outcome 'charging'
-            if outcome_map['WAIT_FOR_CHARGE'] == 'charging':
-                return True
+            smach.StateMachine.add('UNLOCK_SOLENOID',
+                                ServiceState('/set_solenoid',
+                                    Trigger,
+                                    request_cb = Charging.request_cb,
+                                    response_cb = Charging.response_cb,
+                                    input_keys = []),
+                                transitions={'succeeded': 'NAVIGATE',
+                                    'preempted': 'preempted','aborted': 'aborted'},
+                                    remapping = {})
 
-            # terminate all running states if NAVIGATION finished with outcome 'succeeded'
-            if outcome_map['WHOLE_NAVIGATION'] == 'succeeded':
-                return True
+            smach.StateMachine.add('NAVIGATE',
+                                SimpleNavigation(),
+                                transitions={'succeeded': 'succeeded',
+                                    'preempted': 'preempted','aborted': 'aborted'},
+                                    remapping = {'sm_pose': 'received_goal', 'charge': 'sm_charge',
+                                    'sm_recovery_flag': 'recovery_flag'})
 
-            # terminate all running states if NAVIGATION finished with outcome 'aborted'
-            if outcome_map['WHOLE_NAVIGATION'] == 'aborted':
-                return True
+    @staticmethod
+    @smach.cb_interface(
+        input_keys=[],
+        output_keys=[])
+    def request_cb(userdata, request):
+        solenoid_request = TriggerRequest()
+        return solenoid_request
 
-            # in all other case, just keep running, don't terminate anything
-            return False
-
-
-        # gets called when ALL child states are terminated
-        def navig_out_cb(outcome_map):
-            if outcome_map['WAIT_FOR_CHARGE'] == 'charging':
-                return 'navigate2charge'
-            if outcome_map['WHOLE_NAVIGATION'] == 'succeeded':
-                output_pose = PoseStamped()
-                navig_cc.userdata.sm_pose = output_pose
-                output_charge_signal = Bool()
-                output_charge_signal.data = False
-                navig_cc.userdata.sm_charge = output_charge_signal
-                return 'loop'
-            if outcome_map['WHOLE_NAVIGATION'] == 'aborted':
-                return 'aborted'
-            else:
-                return 'preempted' 
-                
-        # creating the concurrence state machine
-        navig_cc = smach.Concurrence(outcomes = ['navigate2charge', 'preempted', 'aborted', 'loop'],
-                        output_keys = ['sm_pose', 'sm_charge'],
-                        input_keys=['sm_recovery_flag'],
-                        default_outcome = 'preempted',
-                        child_termination_cb = navig_child_term_cb,
-                        outcome_cb = navig_out_cb)
-        with navig_cc:
-
-            whole_navig = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'charging'],
-            input_keys=['sm_recovery_flag'],
-            output_keys= [])
-
-
-            with whole_navig:
-                smach.StateMachine.add('WAIT_FOR_GOAL',
-                                        WaitForGoal(),
-                                        transitions= {'received_goal': 'NAVIGATION', 'preempted': 'preempted'},
-                                        remapping= {'target_pose': 'st_pose', 'charge': 'st_charge'})               
-
-                smach.StateMachine.add('NAVIGATION',
-                                        Navigate(),
-                                        transitions={'succeeded': 'succeeded', 'preempted': 'preempted',
-                                        'aborted': 'aborted','charging': 'charging'},
-                                        remapping={'received_goal': 'st_pose', 'charge': 'st_charge',
-                                        'recovery_flag': 'sm_recovery_flag'})
-
-            smach.Concurrence.add('WHOLE_NAVIGATION',
-                                whole_navig,
-                                remapping = {})
-
-            smach.Concurrence.add('WAIT_FOR_CHARGE',
-                               WaitForCharge(),
-                               remapping={'target_pose': 'sm_pose','charge': 'sm_charge'})
-
-        smach.StateMachine.add('NAVIGATION_LOOP',
-                               navig_cc,
-                               transitions={'navigate2charge': 'NAVIGATE_BEFORE_STATION', 'loop': 'NAVIGATION_LOOP',
-                                'preempted': 'preempted','aborted': 'aborted'},
-                                remapping = {'sm_pose': 'sm_pose', 'sm_charge': 'sm_charge',
-                                'sm_recovery_flag': 'sm_recovery_flag'})
-
-        smach.StateMachine.add('NAVIGATE_BEFORE_STATION',
-                               Navigate(),
-                               transitions={'succeeded': 'NAVIGATION_LOOP', 'preempted': 'preempted',
-                               'aborted': 'aborted','charging': 'NAVIGATE_2_PLUG'},
-                               remapping={'received_goal': 'sm_pose', 'charge': 'sm_charge',
-                               'recovery_flag': 'sm_recovery_flag'})
-
-        smach.StateMachine.add('NAVIGATE_2_PLUG',
-                               Navigate2Station(),
-                               transitions={'succeeded': 'STOP_ROBOT',
-                               'aborted': 'aborted'},
-                               remapping={'recovery_flag': 'sm_recovery_flag', 'charge': 'sm_charge'})
-
-        smach.StateMachine.add('STOP_ROBOT',
-                               PublishVelocity(),
-                               transitions={'robot_stopped': 'CHARGING',
-                               'preempted': 'preempted'},
-                               remapping={})
-
-        smach.StateMachine.add('CHARGING',
-                               AfterCharging(),
-                               transitions={'succeeded': 'NAVIGATION_LOOP',
-                                'preempted': 'preempted','aborted': 'aborted'},
-                                remapping = {})
+    @staticmethod
+    @smach.cb_interface(
+        output_keys=[],
+        outcomes=['succeeded', 'aborted', 'preempted'])
+    def response_cb(userdata, response):
+        if response.success == True:
+            return 'succeeded'
+        else:
+            if response.message == 'preempted':
+                return 'preempted'
+            return 'aborted'
 
 
-    # Create and start introspection server
-    sis = smach_ros.IntrospectionServer('smach_server', mbf_sm, '/SM_ROOT')
-    sis.start()
-
-    # Execute SMACH plan
-    outcome = mbf_sm.execute()
-
-    # Wait for interrupt and stop introspection server
-    rospy.spin()
-    sis.stop()
-
-if __name__ == "__main__":
-    while not rospy.is_shutdown():
-        main()
