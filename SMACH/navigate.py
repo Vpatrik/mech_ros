@@ -26,10 +26,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Patrik Vavra 2019
+# Main structure from above copyright source code was taken and modified for custom needs
+
+
+#############
+"""
+State machine that navigates to goal from userdata or from initialization, with given specifications
+"""
 
 import rospy
 import smach
 import smach_ros
+import dynamic_reconfigure.client
 
 from mbf_msgs.msg import ExePathAction
 from mbf_msgs.msg import ExePathResult
@@ -45,11 +53,18 @@ from geometry_msgs.msg import PoseStamped
 
 
 class Navigate(smach.StateMachine):
-    def __init__(self):
+    def __init__(self, charge = False, goal_pose = None, planner = 'Normal_planner', controller = 'dwa',
+        reconfigure_smaller = None, reconfigure_bigger = None):
         smach.StateMachine.__init__(self,
-            outcomes=['succeeded', 'preempted', 'aborted', 'charging'],
-            input_keys=['received_goal','charge', 'recovery_flag'])
+            outcomes=['succeeded', 'preempted','aborted'],
+            input_keys=['received_goal','recovery_flag'] if charge is False else ['recovery_flag'])
 
+        self.charge = charge
+        self.goal_pose = goal_pose
+        self.planner = planner
+        self.controller = controller
+        self.reconfigure_smaller = reconfigure_smaller
+        self.reconfigure_bigger = reconfigure_bigger
     
         with self:            
             smach.StateMachine.add('GET_PATH',
@@ -68,7 +83,6 @@ class Navigate(smach.StateMachine):
                                                             result_cb = Navigate.ex_path_result_cb),
                                 transitions={'success': 'succeeded',
                                                 'aborted': 'RECOVERY',
-                                                'charging': 'charging',
                                                 'preempted': 'preempted'})
 
             smach.StateMachine.add('RECOVERY',
@@ -83,40 +97,58 @@ class Navigate(smach.StateMachine):
     @staticmethod
     @smach.cb_interface(
         input_keys=['received_goal', 'charge'])
-    def get_path_goal_cb(userdata, goal):
-        goal.use_start_pose = False
+    def get_path_goal_cb(self, userdata, goal):
 
-        if userdata.charge.data == True:
-            target_pose = PoseStamped()
-            target_pose.header.stamp = rospy.Time.now()
-            target_pose.header.frame_id = 'map'
+        if self.reconfigure_smaller:
+            # Dynamicaly reconfigure robot footprint to fit in the charging station
+            client_local_costmap = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap')
+            client_global_costmap = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap')
+            client_local_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap/inflation')
+            client_global_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap/inflation')
 
-            # Simulation
-            # target_pose.pose.position.x = -5.3
-            # target_pose.pose.position.y = -3.5
-            # target_pose.pose.orientation.z = 0.707106781
-            # target_pose.pose.orientation.w = 0.707106781
+            # Original paramateres
+            # /move_base_flex/local_costmap/inflation/footprint [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]
+            # /move_base_flex/local_costmap/inflation/robot_radius 0.46 - probbly not used
+            # /move_base_flex/local_costmap/inflation/cost_scaling_factor 2.55
+            # /move_base_flex/local_costmap/inflation/inflation_radius 0.38
+            # /move_base_flex/local_costmap/inflation/enabled True
+            # /move_base_flex/global_costmap/inflation/footprint [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]
+            # /move_base_flex/global_costmap/inflation/robot_radius 0.46 - probbly not used
+            # /move_base_flex/global_costmap/inflation/cost_scaling_factor 2.55
+            # /move_base_flex/global_costmap/inflation/inflation_radius 0.38
+            # /move_base_flex/global_costmap/inflation/enabled True
 
-            # Real robot
-            target_pose.pose.position.x = 2.2
-            target_pose.pose.position.y = -0.215
-            target_pose.pose.orientation.z = 0.707106781
-            target_pose.pose.orientation.w = 0.707106781
+            # Probably would be best to disable inflation layer in both costmaps for navigation to plug
+            # and to downscale footprint
+            params_local_footprint = {'footprint' : [[-0.06,-0.05],[-0.06,0.05],[0.06,0.05],[0.06,-0.05]]}
+            params_global_footprint = {'footprint' : [[-0.06,-0.05],[-0.06,0.05],[0.06,0.05],[0.06,-0.05]]}
+            params_local_inflation = {'enabled' : False}
+            params_global_inflation = {'enabled' : False}
 
-            goal.target_pose = target_pose
-            goal.planner = 'Normal_planner'
-            goal.tolerance = 0.05
 
-        else: 
-            goal.target_pose = userdata.received_goal
+            config_local_costmap = client_local_costmap.update_configuration(params_local_footprint)
+            config_global_costmap = client_global_costmap.update_configuration(params_global_footprint)
+            config_local_inflation = client_local_costmap_inflation.update_configuration(params_local_inflation)
+            config_global_inflation = client_global_costmap_inflation.update_configuration(params_global_inflation)
+
+
+        if self.goal_pose is None:
+            target_pose = userdata.received_goal
             goal.tolerance = 0.2
-        goal.planner = 'Normal_planner'
+
+        else:           
+            target_pose = self.goal_pose
+            goal.tolerance = 0.05
+        
+        target_pose.stamp = rospy.Time.now()
+        goal.use_start_pose = False
+        goal.planner = self.planner
 
     @staticmethod
     @smach.cb_interface(
         output_keys=['outcome', 'message', 'path'],
         outcomes=['success', 'aborted', 'preempted'])
-    def get_path_result_cb(userdata, status, result):
+    def get_path_result_cb(self, userdata, status, result):
         userdata.message = result.message
         userdata.outcome = result.outcome
         userdata.path = result.path
@@ -129,22 +161,39 @@ class Navigate(smach.StateMachine):
 
     @staticmethod
     @smach.cb_interface(input_keys=['path'])
-    def ex_path_goal_cb(userdata, goal):
+    def ex_path_goal_cb(self, userdata, goal):
         goal.path = userdata.path
-        goal.controller = 'dwa'
+        goal.controller = self.controller
 
     @staticmethod
     @smach.cb_interface(input_keys=['charge'],
         output_keys=['outcome', 'message', 'final_pose', 'dist_to_goal'],
-        outcomes=['success', 'aborted', 'charging', 'preempted'])
-    def ex_path_result_cb(userdata, status, result):
+        outcomes=['success', 'aborted', 'preempted'])
+    def ex_path_result_cb(self, userdata, status, result):
         userdata.message = result.message
         userdata.outcome = result.outcome
         userdata.dist_to_goal = result.dist_to_goal
         userdata.final_pose = result.final_pose
         if result.outcome == ExePathResult.SUCCESS:
-            if userdata.charge.data == True:
-                return 'charging'
+
+            if self.reconfigure_bigger:
+                # Dynamicaly reconfigure navigation parameters to normal state
+                client_local_costmap = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap')
+                client_global_costmap = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap')
+                client_local_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/local_costmap/inflation')
+                client_global_costmap_inflation = dynamic_reconfigure.client.Client('/move_base_flex/global_costmap/inflation')
+
+                params_local_footprint = {'footprint' : [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]}
+                params_global_footprint = {'footprint' : [[-0.12,-0.1],[-0.12,0.1],[0.12,0.1],[0.12,-0.1]]}
+                params_local_inflation = {'enabled' : True}
+                params_global_inflation = {'enabled' : True}
+
+
+                config_local_costmap = client_local_costmap.update_configuration(params_local_footprint)
+                config_global_costmap = client_global_costmap.update_configuration(params_global_footprint)
+                config_local_inflation = client_local_costmap_inflation.update_configuration(params_local_inflation)
+                config_global_inflation = client_global_costmap_inflation.update_configuration(params_global_inflation)
+
             return 'success'
         elif result.outcome == ExePathResult.CANCELED:
             return 'preempted'
@@ -153,7 +202,7 @@ class Navigate(smach.StateMachine):
 
     @staticmethod
     @smach.cb_interface(input_keys=['recovery_flag'], output_keys=['recovery_flag'])
-    def recovery_goal_cb(userdata, goal):
+    def recovery_goal_cb(self, userdata, goal):
 
         if not userdata.recovery_flag:
             goal.behavior = 'clear_costmap'
@@ -166,7 +215,7 @@ class Navigate(smach.StateMachine):
     @smach.cb_interface(
         output_keys=['outcome', 'message'],
         outcomes=['success', 'aborted', 'preempted'])
-    def recovery_result_cb(userdata, status, result):
+    def recovery_result_cb(self, userdata, status, result):
         if result.outcome == RecoveryResult.SUCCESS:
             return 'success'
         elif result.outcome == RecoveryResult.CANCELED:

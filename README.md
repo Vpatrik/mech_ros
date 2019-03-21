@@ -30,7 +30,7 @@ This repository contains ROS based software part of the project.
  - Custom PCB with Arduino SAMD Zero
  - Working station PC - Ubuntu
 
-## Mechanics:
+### Mechanics:
  - 4 Wheel Skid Steer
  - Front servo gripper
 
