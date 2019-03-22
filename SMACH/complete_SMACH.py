@@ -36,6 +36,7 @@ def main():
 
     mbf_sm = smach.StateMachine(outcomes=['preempted', 'succeeded', 'aborted'])
     mbf_sm.userdata.sm_recovery_flag = False
+    mbf_sm.userdata.sm_number = 0
 
     with mbf_sm:
 
@@ -71,7 +72,7 @@ def main():
 
         # creating the concurrence state machine
         navig_cc = smach.Concurrence(outcomes = ['charge', 'preempted', 'aborted', 'loop'],
-                        output_keys = ['sm_pose'],
+                        output_keys = [],
                         input_keys=['sm_recovery_flag'],
                         default_outcome = 'preempted',
                         child_termination_cb = navig_child_term_cb,
@@ -109,7 +110,7 @@ def main():
                                navig_cc,
                                transitions={'charge': 'NAVIGATION_TO_CHARGE_WITH_CONTROL', 'loop': 'NAVIGATION_LOOP',
                                 'preempted': 'preempted','aborted': 'aborted'},
-                                remapping = {'sm_pose': 'sm_pose','sm_recovery_flag': 'sm_recovery_flag'})
+                                remapping = {'sm_recovery_flag': 'sm_recovery_flag'})
 
             ############ Complete navigation from arbitrary place to plug in charging station 
             # - without control of timing out ###############################################
@@ -167,16 +168,16 @@ def main():
                 BeforeStation.header.stamp = rospy.Time.now()
 
                 # Simulation
-                # BeforeStation.pose.position.x = -5.3
-                # BeforeStation.pose.position.y = -3.5
-                # BeforeStation.pose.orientation.z = 0.707106781
-                # BeforeStation.pose.orientation.w = 0.707106781
-
-                # Real robot
-                BeforeStation.pose.position.x = 2.2
-                BeforeStation.pose.position.y = -0.215
+                BeforeStation.pose.position.x = -5.3
+                BeforeStation.pose.position.y = -3.5
                 BeforeStation.pose.orientation.z = 0.707106781
                 BeforeStation.pose.orientation.w = 0.707106781
+
+                # Real robot
+                # BeforeStation.pose.position.x = 2.2
+                # BeforeStation.pose.position.y = -0.215
+                # BeforeStation.pose.orientation.z = 0.707106781
+                # BeforeStation.pose.orientation.w = 0.707106781
                 
                 smach.StateMachine.add('NAVIGATE_BEFORE_STATION',
                                     Navigate(charge= True, goal_pose= BeforeStation, planner= 'Normal_planner',
@@ -214,7 +215,7 @@ def main():
 
                 navig_to_plug = smach.Concurrence(
                     outcomes=['succeeded', 'aborted', 'preempted'],
-                    input_keys=['recovery_flag'],
+                    input_keys=['sm_recovery_flag'],
                     output_keys = [],
                     default_outcome = 'succeeded',
                     child_termination_cb = plug_child_term_cb,
@@ -228,16 +229,16 @@ def main():
                     Plug.header.stamp = rospy.Time.now()
 
                     # Simulation
-                    # Plug.pose.position.x = -5.3
-                    # Plug.pose.position.y = -4.5
-                    # Plug.pose.orientation.z = 0.707106781
-                    # Plug.pose.orientation.w = 0.707106781
-
-                    # Real robot
-                    Plug.pose.position.x = 2.17
-                    Plug.pose.position.y = -1.45
+                    Plug.pose.position.x = -5.3
+                    Plug.pose.position.y = -4.5
                     Plug.pose.orientation.z = 0.707106781
                     Plug.pose.orientation.w = 0.707106781
+
+                    # Real robot
+                    # Plug.pose.position.x = 2.17
+                    # Plug.pose.position.y = -1.45
+                    # Plug.pose.orientation.z = 0.707106781
+                    # Plug.pose.orientation.w = 0.707106781
 
                     smach.Concurrence.add('NAVIGATE_2_PLUG',
                                         Navigate(charge= True, goal_pose= Plug, planner= 'Charging_station_planner',
@@ -274,14 +275,14 @@ def main():
             ################ END of complete navigation from arbitrary place to plug in charging station #######################
 
             smach.Concurrence.add('TIMING_OUT',
-                                TimedOut(time = 40),
+                                TimedOut(time = 80),
                                 remapping={'number_in': 'sm_number', 'number_out': 'sm_number'})
 
         smach.StateMachine.add('NAVIGATION_TO_CHARGE_WITH_CONTROL',
                                 navig_charge,
                                 transitions={'succeeded': 'CHARGING', 'retry': 'NAVIGATION_TO_CHARGE_WITH_CONTROL',
                                'preempted': 'preempted', 'aborted':'aborted'},
-                               remapping={'sm_recovery_flag':'sm_recovery_flag'})                           
+                               remapping={'sm_recovery_flag':'sm_recovery_flag', 'sm_number': 'sm_number'})                           
 
 
             ################ END of complete navigation from arbitrary place to plug in charging station
@@ -291,7 +292,7 @@ def main():
                                Charging(),
                                transitions={'succeeded': 'NAVIGATION_LOOP',
                                 'preempted': 'preempted','aborted': 'aborted'},
-                                remapping = {})
+                                remapping = {'sm_recovery_flag' : 'sm_recovery_flag'})
 
 
     # Create and start introspection server

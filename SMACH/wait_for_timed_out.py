@@ -23,7 +23,7 @@ class TimedOut(smach.State):
         if userdata.number_in > 2:
             rospy.loginfo('Already two unsuccessfull attempts for navigation to charging plug. Aborting!!!')
             return 'aborted'
-        rospy.loginfo("Wait for navigate2plug for %d seconds before timing out." % self.time)
+        rospy.loginfo("Wait for complete navigation to charging station for %d seconds before timing out." % self.time)
         sleeping_step_size = 1 # [s]
 
         while self.time > 0:

@@ -96,7 +96,7 @@
   </node>
 
    <!-- Charging -->
-<node pkg="mech_ros" type="charging.py" name="mbf_move_base_action" output="screen"/>
+<node pkg="mech_ros" type="complete_SMACH.py" name="mbf_move_base_action" output="screen"/>
 
  
  <!-- Kinematics -->

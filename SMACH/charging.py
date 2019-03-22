@@ -31,7 +31,7 @@ import rospy
 import smach
 import smach_ros
 
-from navigate2station import SimpleNavigation
+from navigate import Navigate
 from wait_for_recharge import WaitForRecharge
 from send_velocity_command import PublishVelocity
 
@@ -48,7 +48,7 @@ class Charging(smach.StateMachine):
     def __init__(self):
         smach.StateMachine.__init__(self,
             outcomes=['succeeded', 'preempted', 'aborted'],
-            input_keys=[])
+            input_keys=['sm_recovery_flag'])
 
         # Initialize velocity command
         cmd_vel = Twist()
@@ -79,12 +79,29 @@ class Charging(smach.StateMachine):
                                     'preempted': 'preempted','aborted': 'aborted'},
                                     remapping = {})
 
+            # Initialize pose before station to navigate to
+            BeforeStation = PoseStamped()
+            BeforeStation.header.frame_id = 'map'
+            BeforeStation.header.stamp = rospy.Time.now()
+
+            # Simulation
+            BeforeStation.pose.position.x = -5.3
+            BeforeStation.pose.position.y = -3.5
+            BeforeStation.pose.orientation.z = 0.707106781
+            BeforeStation.pose.orientation.w = 0.707106781
+
+            # Real robot
+            # BeforeStation.pose.position.x = 2.2
+            # BeforeStation.pose.position.y = -0.215
+            # BeforeStation.pose.orientation.z = 0.707106781
+            # BeforeStation.pose.orientation.w = 0.707106781
+
             smach.StateMachine.add('NAVIGATE',
-                                SimpleNavigation(),
+                                Navigate(charge= False, goal_pose= BeforeStation, planner = 'Charging_station_planner',
+                                controller= 'dwa_station', reconfigure_bigger= True),
                                 transitions={'succeeded': 'succeeded',
                                     'preempted': 'preempted','aborted': 'aborted'},
-                                    remapping = {'sm_pose': 'received_goal', 'charge': 'sm_charge',
-                                    'sm_recovery_flag': 'recovery_flag'})
+                                    remapping = {'recovery_flag': 'sm_recovery_flag'})
 
     @staticmethod
     @smach.cb_interface(

@@ -28,8 +28,6 @@
 # Patrik Vavra 2019
 # Main structure from above copyright source code was taken and modified for custom needs
 
-
-#############
 """
 State machine that navigates to goal from userdata or from initialization, with given specifications
 """
@@ -38,6 +36,11 @@ import rospy
 import smach
 import smach_ros
 import dynamic_reconfigure.client
+
+if hasattr(smach.CBInterface, '__get__'):
+    from smach import cb_interface
+else:
+    from smach_polyfill import cb_interface
 
 from mbf_msgs.msg import ExePathAction
 from mbf_msgs.msg import ExePathResult
@@ -57,7 +60,7 @@ class Navigate(smach.StateMachine):
         reconfigure_smaller = None, reconfigure_bigger = None):
         smach.StateMachine.__init__(self,
             outcomes=['succeeded', 'preempted','aborted'],
-            input_keys=['received_goal','recovery_flag'] if charge is False else ['recovery_flag'])
+            input_keys=['received_goal','recovery_flag'] if goal_pose is None else ['recovery_flag'])
 
         self.charge = charge
         self.goal_pose = goal_pose
@@ -70,8 +73,8 @@ class Navigate(smach.StateMachine):
             smach.StateMachine.add('GET_PATH',
                                 smach_ros.SimpleActionState('move_base_flex/get_path',
                                                             GetPathAction,
-                                                            goal_cb = Navigate.get_path_goal_cb,
-                                                            result_cb = Navigate.get_path_result_cb),
+                                                            goal_cb = self.get_path_goal_cb,
+                                                            result_cb = self.get_path_result_cb),
                                 transitions={'success': 'EXE_PATH',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
@@ -79,8 +82,8 @@ class Navigate(smach.StateMachine):
             smach.StateMachine.add('EXE_PATH',
                                 smach_ros.SimpleActionState('move_base_flex/exe_path',
                                                             ExePathAction,
-                                                            goal_cb = Navigate.ex_path_goal_cb,
-                                                            result_cb = Navigate.ex_path_result_cb),
+                                                            goal_cb = self.ex_path_goal_cb,
+                                                            result_cb = self.ex_path_result_cb),
                                 transitions={'success': 'succeeded',
                                                 'aborted': 'RECOVERY',
                                                 'preempted': 'preempted'})
@@ -88,15 +91,14 @@ class Navigate(smach.StateMachine):
             smach.StateMachine.add('RECOVERY',
                                 smach_ros.SimpleActionState('move_base_flex/recovery',
                                                             RecoveryAction,
-                                                            goal_cb = Navigate.recovery_goal_cb,
-                                                            result_cb = Navigate.recovery_result_cb),
+                                                            goal_cb = self.recovery_goal_cb,
+                                                            result_cb = self.recovery_result_cb),
                                 transitions={'success': 'GET_PATH',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
 
-    @staticmethod
-    @smach.cb_interface(
-        input_keys=['received_goal', 'charge'])
+    @cb_interface(
+        input_keys=['received_goal'])
     def get_path_goal_cb(self, userdata, goal):
 
         if self.reconfigure_smaller:
@@ -138,14 +140,18 @@ class Navigate(smach.StateMachine):
 
         else:           
             target_pose = self.goal_pose
-            goal.tolerance = 0.05
+            if self.charge == False:
+                goal.tolerance = 0.08
+            else:
+                goal.tolerance = 0.2
         
-        target_pose.stamp = rospy.Time.now()
+
+        target_pose.header.stamp = rospy.Time.now()
+        goal.target_pose = target_pose
         goal.use_start_pose = False
         goal.planner = self.planner
 
-    @staticmethod
-    @smach.cb_interface(
+    @cb_interface(
         output_keys=['outcome', 'message', 'path'],
         outcomes=['success', 'aborted', 'preempted'])
     def get_path_result_cb(self, userdata, status, result):
@@ -159,14 +165,12 @@ class Navigate(smach.StateMachine):
         else:
             return 'aborted'
 
-    @staticmethod
-    @smach.cb_interface(input_keys=['path'])
+    @cb_interface(input_keys=['path'])
     def ex_path_goal_cb(self, userdata, goal):
         goal.path = userdata.path
         goal.controller = self.controller
 
-    @staticmethod
-    @smach.cb_interface(input_keys=['charge'],
+    @cb_interface(input_keys=[],
         output_keys=['outcome', 'message', 'final_pose', 'dist_to_goal'],
         outcomes=['success', 'aborted', 'preempted'])
     def ex_path_result_cb(self, userdata, status, result):
@@ -200,8 +204,7 @@ class Navigate(smach.StateMachine):
         else:
             return 'aborted'
 
-    @staticmethod
-    @smach.cb_interface(input_keys=['recovery_flag'], output_keys=['recovery_flag'])
+    @cb_interface(input_keys=['recovery_flag'], output_keys=['recovery_flag'])
     def recovery_goal_cb(self, userdata, goal):
 
         if not userdata.recovery_flag:
@@ -211,8 +214,7 @@ class Navigate(smach.StateMachine):
             goal.behavior = 'rotate_recovery'
             userdata.recovery_flag = False
 
-    @staticmethod
-    @smach.cb_interface(
+    @cb_interface(
         output_keys=['outcome', 'message'],
         outcomes=['success', 'aborted', 'preempted'])
     def recovery_result_cb(self, userdata, status, result):

@@ -74,7 +74,7 @@ output="screen" ns="/mechROS" args="base_control"> </node>
   <include file="$(find mech_ros)/launch/move_base_flex_simul.launch"/>
 
    <!-- Charging -->
-<node pkg="mech_ros" type="charging.py" name="mbf_move_base_action" output="screen"/>
+<node pkg="mech_ros" type="complete_SMACH.py" name="mbf_move_base_action" output="screen"/>
 
    <!-- Charging station -->
 <node pkg="mech_ros" type="Charging_station.py" name="charging_station" output="screen"/>
