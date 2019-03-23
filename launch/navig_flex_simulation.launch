@@ -73,8 +73,18 @@ output="screen" ns="/mechROS" args="base_control"> </node>
      <!-- Navigation -->
   <include file="$(find mech_ros)/launch/move_base_flex_simul.launch"/>
 
-   <!-- Charging -->
-<node pkg="mech_ros" type="complete_SMACH.py" name="mbf_move_base_action" output="screen"/>
+   <!-- Charging SMACH -->
+<node pkg="mech_ros" type="complete_SMACH.py" name="mbf_move_base_action" output="screen">
+    <param name="lower_battery_threshold" value="3.5" />
+    <param name="higher_battery_threshold" value="4.5" />
+    <param name="timed_out" value="80" />
+    <param name="world_frame" value="map" />
+    <param name="simulation" value="True" />
+    <rosparam param="pose_before_station">[ -5.3,  -3.5,  0.0,
+                                            0.0,  0.0,  0.707106781, 0.707106781 ]</rosparam>
+    <rosparam param="pose_plug">[ -5.3,  -4.5,  0.0,
+                                  0.0,  0.0,  0.707106781, 0.707106781 ]</rosparam>
+</node>
 
    <!-- Charging station -->
 <node pkg="mech_ros" type="Charging_station.py" name="charging_station" output="screen"/>

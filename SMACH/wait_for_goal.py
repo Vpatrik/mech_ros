@@ -33,13 +33,14 @@ import tf2_geometry_msgs
 
 class WaitForGoal(smach.State):
 
-    def __init__(self):
+    def __init__(self, simulation= False):
         smach.State.__init__(self, outcomes=['received_goal', 'preempted'], input_keys=[], output_keys=['target_pose'])
         self.target_pose = PoseStamped()
         self.tf_buffer = tf2_ros.Buffer(rospy.Duration(1.0)) #tf buffer length
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         self.signal = threading.Event()
         self.subscriber = None
+        self.simulation = simulation
 
 
 
@@ -66,15 +67,16 @@ class WaitForGoal(smach.State):
     def goal_callback(self, msg):
         rospy.logdebug("Received goal pose: %s", str(msg))
         try:
-            # Simulated
-            trans = self.tf_buffer.lookup_transform('map', 'mechROS_base_link', rospy.Time(0), rospy.Duration(1.0))
-            pose_transformed = tf2_geometry_msgs.do_transform_pose(msg, trans)
-            pose_transformed.header.frame_id = 'map'
-            self.target_pose = pose_transformed
+            if self.simulation:
+                # Simulated
+                trans = self.tf_buffer.lookup_transform('map', 'mechROS_base_link', rospy.Time(0), rospy.Duration(1.0))
+                pose_transformed = tf2_geometry_msgs.do_transform_pose(msg, trans)
+                pose_transformed.header.frame_id = 'map'
+                self.target_pose = pose_transformed
 
-            # Real robot
-            # self.target_pose = msg
-
+            else:
+                # Real robot
+                self.target_pose = msg
 
             self.signal.set()
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):

@@ -32,7 +32,7 @@ import smach
 import smach_ros
 
 from navigate import Navigate
-from wait_for_recharge import WaitForRecharge
+from monitor_battery import WaitForBatteryLevel
 from send_velocity_command import PublishVelocity
 
 from geometry_msgs.msg import PoseStamped
@@ -45,11 +45,15 @@ from std_srvs.srv import TriggerRequest
 from std_srvs.srv import TriggerResponse
 
 class Charging(smach.StateMachine):
-    def __init__(self):
+    def __init__(self, charge_level = 4.5, before_station = None):
         smach.StateMachine.__init__(self,
             outcomes=['succeeded', 'preempted', 'aborted'],
             input_keys=['sm_recovery_flag'])
 
+        if before_station == None:
+            rospy.signal_shutdown("No position before station was provided!")
+        self.charge_level = charge_level
+        self.before_station = before_station
         # Initialize velocity command
         cmd_vel = Twist()
         cmd_vel.linear.x = -0.05
@@ -57,11 +61,10 @@ class Charging(smach.StateMachine):
 
         with self:
             smach.StateMachine.add('WAIT_FOR_RECHARGE',
-                                WaitForRecharge(),
-                                transitions={'charged': 'MOVE_BACKWARDS',
-                                    'preempted': 'preempted','aborted': 'aborted'},
-                                    remapping = { 'pose': 'sm_pose', 'charge': 'sm_charge',
-                                    'recovery': 'sm_recovery_flag'})
+                                WaitForBatteryLevel(lower=False, threshold= self.charge_level),
+                                transitions={'level_reached': 'MOVE_BACKWARDS',
+                                    'preempted': 'preempted'},
+                                    remapping = {})
 
             smach.StateMachine.add('MOVE_BACKWARDS',
                                 PublishVelocity(cmd_vel),
@@ -79,25 +82,11 @@ class Charging(smach.StateMachine):
                                     'preempted': 'preempted','aborted': 'aborted'},
                                     remapping = {})
 
-            # Initialize pose before station to navigate to
-            BeforeStation = PoseStamped()
-            BeforeStation.header.frame_id = 'map'
-            BeforeStation.header.stamp = rospy.Time.now()
-
-            # Simulation
-            BeforeStation.pose.position.x = -5.3
-            BeforeStation.pose.position.y = -3.5
-            BeforeStation.pose.orientation.z = 0.707106781
-            BeforeStation.pose.orientation.w = 0.707106781
-
-            # Real robot
-            # BeforeStation.pose.position.x = 2.2
-            # BeforeStation.pose.position.y = -0.215
-            # BeforeStation.pose.orientation.z = 0.707106781
-            # BeforeStation.pose.orientation.w = 0.707106781
+            # Fill time informmation in pose
+            before_station.header.stamp = rospy.Time.now()
 
             smach.StateMachine.add('NAVIGATE',
-                                Navigate(charge= False, goal_pose= BeforeStation, planner = 'Charging_station_planner',
+                                Navigate(charge= False, goal_pose= before_station, planner = 'Charging_station_planner',
                                 controller= 'dwa_station', reconfigure_bigger= True),
                                 transitions={'succeeded': 'succeeded',
                                     'preempted': 'preempted','aborted': 'aborted'},

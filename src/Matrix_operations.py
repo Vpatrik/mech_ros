@@ -379,3 +379,6 @@ print(suma/50)
 # print(nul.shape)
 # print(nul)
 # print(pok)
+
+res2 = mult - suma/50
+print(res2)

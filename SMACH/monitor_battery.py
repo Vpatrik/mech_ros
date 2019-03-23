@@ -27,22 +27,24 @@
 import rospy
 import smach
 import threading
-from std_msgs.msg import Bool
 from std_msgs.msg import Int8
-from geometry_msgs.msg import PoseStamped
 
-class WaitForCharge(smach.State):
 
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['charging', 'preempted'], input_keys=[], output_keys=['charge', 'target_pose'])
-        self.charge = Bool()
+class WaitForBatteryLevel(smach.State):
+
+    def __init__(self, threshold = 3.5, lower = True):
+        smach.State.__init__(self, outcomes=['level_reached', 'preempted'], input_keys=[], output_keys=[])
         self.signal = threading.Event()
         self.subscriber = None
-
+        self.threshold = threshold
+        self.lower = lower
 
     def execute(self, user_data):
-
-        rospy.loginfo("Waiting for a low battery voltage...")
+        if self.lower:
+            rospy.loginfo("Waiting for a battery voltage to drop to %f V", self.threshold)
+        else:
+            rospy.loginfo("Waiting for a battery voltage to reach %f V", self.threshold)
+            
         self.signal.clear()
         self.subscriber = rospy.Subscriber('/volt_battery', Int8, self.volt_callback)
         
@@ -54,22 +56,22 @@ class WaitForCharge(smach.State):
             self.service_preempt()
             return 'preempted'
 
-        user_data.charge = self.charge
-        target_pose = PoseStamped()
-        target_pose.header.frame_id = 'map'
-        user_data.target_pose = target_pose
-        rospy.loginfo("Aborting current state, starting to navigate to charging station!")
+        rospy.loginfo("Battery voltage reached %f V, proceeding to next state!", self.threshold)
 
-        return 'charging'
+        return 'level_reached'
 
     def volt_callback(self, msg):
         raw_volt_level = msg.data
         volt_level = (raw_volt_level + 335.0) / 100.0
 
-        if volt_level < 3.5:
-            rospy.loginfo("Low battery voltage!")
-            self.charge.data = True
-            self.signal.set()
+        if self.lower:
+            if volt_level < self.threshold:
+                rospy.loginfo("Low battery voltage!")               
+                self.signal.set()
+        else:
+            if volt_level > self.threshold:
+                rospy.loginfo("High battery voltage!")               
+                self.signal.set()                
 
 
     def request_preempt(self):

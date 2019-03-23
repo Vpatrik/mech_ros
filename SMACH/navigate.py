@@ -150,6 +150,10 @@ class Navigate(smach.StateMachine):
         goal.target_pose = target_pose
         goal.use_start_pose = False
         goal.planner = self.planner
+        rospy.loginfo("Navigating to position: (%s, %s, %s)", goal.target_pose.pose.position.x, goal.target_pose.pose.position.y,
+        goal.target_pose.pose.position.z)
+        rospy.loginfo("Navigating to final orientation: (%s, %s, %s, %s)", goal.target_pose.pose.orientation.x, goal.target_pose.pose.orientation.y,
+        goal.target_pose.pose.orientation.z, goal.target_pose.pose.orientation.w)
 
     @cb_interface(
         output_keys=['outcome', 'message', 'path'],

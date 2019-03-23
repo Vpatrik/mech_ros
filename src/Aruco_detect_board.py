@@ -57,12 +57,12 @@ arucoParams.cornerRefinementMinAccuracy = 0.01
 arucoParams.cornerRefinementWinSize = 5
 
 arucoParams.errorCorrectionRate = 0.6
-# arucoParams.minCornerDistanceRate = 0.05 # min distance between marker corners,
+arucoParams.minCornerDistanceRate = 0.05 # min distance between marker corners,
 # min. distance[pix] = Perimeter*minCornerDistanceRate
-# arucoParams.minMarkerDistanceRate = 0.05 # min distance between corners of different markers,
+arucoParams.minMarkerDistanceRate = 0.05 # min distance between corners of different markers,
 # min. distance[pix] = Perimeter(smaller one)*minMarkerDistanceRate
-# arucoParams.minMarkerPerimeterRate = 0.1 # min_mark_perim[pix]= max. dimension of image [pix]*minMark-per-Rate
-# arucoParams.maxMarkerPerimeterRate = 4.0
+arucoParams.minMarkerPerimeterRate = 0.1 # min_mark_perim[pix]= max. dimension of image [pix]*minMark-per-Rate
+arucoParams.maxMarkerPerimeterRate = 4.0
 arucoParams.minOtsuStdDev = 5.0
 arucoParams.perspectiveRemoveIgnoredMarginPerCell = 0.13
 arucoParams.perspectiveRemovePixelPerCell = 8
@@ -70,6 +70,23 @@ arucoParams.polygonalApproxAccuracyRate = 0.01
 arucoParams.markerBorderBits = 1
 arucoParams.maxErroneousBitsInBorderRate = 0.04
 arucoParams.minDistanceToBorder = 3
+
+
+## Define Aruco board Detector Params
+arucoParams_b = cv2.aruco.DetectorParameters_create()
+arucoParams_b.adaptiveThreshConstant = 7
+arucoParams_b.adaptiveThreshWinSizeMax = 35 # default 23
+arucoParams_b.adaptiveThreshWinSizeMin = 3 # default 3
+arucoParams_b.adaptiveThreshWinSizeStep = 8 # default 10
+arucoParams_b.cornerRefinementMethod = 0
+arucoParams_b.errorCorrectionRate = 0.6
+arucoParams_b.minOtsuStdDev = 5.0
+arucoParams_b.perspectiveRemoveIgnoredMarginPerCell = 0.13
+arucoParams_b.perspectiveRemovePixelPerCell = 8
+arucoParams_b.polygonalApproxAccuracyRate = 0.01
+arucoParams_b.markerBorderBits = 1
+arucoParams_b.maxErroneousBitsInBorderRate = 0.04
+arucoParams_b.minDistanceToBorder = 3
 
 
 
@@ -227,7 +244,7 @@ def aruco_detect(camera_matrix, dist_coeff):
             markerCorners,markerIds,_ = cv2.aruco.detectMarkers(gray,dictionary,parameters = arucoParams, cameraMatrix = camera_matrix,
             distCoeff = dist_coeff )
 
-            markerCorners_b,markerIds_b,_ = cv2.aruco.detectMarkers(gray,dictionary_b,parameters = arucoParams, cameraMatrix = camera_matrix,
+            markerCorners_b,markerIds_b,_ = cv2.aruco.detectMarkers(gray,dictionary_b,parameters = arucoParams_b, cameraMatrix = camera_matrix,
             distCoeff = dist_coeff )
 
 
@@ -289,80 +306,80 @@ def aruco_detect(camera_matrix, dist_coeff):
 
         if len(markerCorners_b) > 0:
             ret, ch_corners, ch_ids = cv2.aruco.interpolateCornersCharuco(markerCorners_b, markerIds_b, gray, board,camera_matrix, dist_coeff)
-            ret_b, rvec, tvec = cv2.aruco.estimatePoseCharucoBoard(ch_corners, ch_ids, board, camera_matrix, dist_coeff) # For a single marker
-            
-            if ret_b > 0:
-                    # cv2.aruco.drawDetectedMarkers(frame,markerCorners_b, markerIds_b)
-                aruco_MarkerList_b = MarkerList()
-                aruco_MarkerList_b.header.stamp = time
-                aruco_MarkerList_b.header.frame_id = frame_id
+            cv2.aruco.drawDetectedMarkers(frame,markerCorners_b, markerIds_b)
+            if ret > 5:
+                ret_b, rvec, tvec = cv2.aruco.estimatePoseCharucoBoard(ch_corners, ch_ids, board, camera_matrix, dist_coeff) # For a single marker
+                
+                if ret_b:
+                        # cv2.aruco.drawDetectedMarkers(frame,markerCorners_b, markerIds_b)
+                    aruco_MarkerList_b = MarkerList()
+                    aruco_MarkerList_b.header.stamp = time
+                    aruco_MarkerList_b.header.frame_id = frame_id
 
-                #cv2.aruco.drawAxis(frame, camera_matrix, dist_coeff, rvec, tvec, 0.1)
+                    # cv2.aruco.drawAxis(frame, camera_matrix, dist_coeff, rvec[i], tvec[i], 0.1)
+                    # imgpts, jac = cv2.projectPoints(axis, rvec[i], tvec[i], camera_matrix, dist_coeff)
+                    frame = draw(frame, markerCorners[i], imgpts)
 
-                # frame = cv2.aruco.drawAxis(frame, camera_matrix, dist_coeff, rvec[i], tvec[i], 0.1)
-                # imgpts, jac = cv2.projectPoints(axis, rvec[i], tvec[i], camera_matrix, dist_coeff)
-                # frame = draw(frame, markerCorners[i], imgpts)
+                    # Fill MarkerList with each marker
+                    aruco_Marker_b = Marker()
+                    # aruco_Marker.id = str(markerIds[0][0])
+                    # aruco_Marker.surface = surface
 
-                # Fill MarkerList with each marker
-                aruco_Marker_b = Marker()
-                # aruco_Marker.id = str(markerIds[0][0])
-                # aruco_Marker.surface = surface
-
-                # Prevedeni rodrigues vectoru na rotacni matici
-                Rmat = np.zeros(shape=(3,3))
-                cv2.Rodrigues(rvec,Rmat)
-
-
-
-                # Convert from Opencv frame to ROS frame in camera
-                R = np.dot(R_ROS_O_camera, Rmat)
-
-                # Convert inverted matrix from Opencv frame to ROS frame in marker
-                R = np.dot(R, R_O_ROS_marker)
-
-                # Convert from Rotation matrix to Euler angles
-                Euler_b = rotationMatrixToEulerAngles(R.T) # rotace z markeru do kamery
-
-               
-                # Fill Marker orientation vector
-                aruco_Marker_b.pose.orientation.y = Euler_b[2]
-                aruco_Marker_b.pose.orientation.r = Euler_b[0]
-                aruco_Marker_b.pose.orientation.p = Euler_b[1]
-
-                surface = cv2.contourArea(ch_corners, False)
-                aruco_Marker_b.surface = surface
-                # Surface - here used for display difference between board ang marker yaw
-                # if marker_yaw is not None:
+                    # Prevedeni rodrigues vectoru na rotacni matici
+                    Rmat = np.zeros(shape=(3,3))
+                    cv2.Rodrigues(rvec,Rmat)
 
 
-                #     if Euler[2] > math.pi/2:
-                #         Euler[2]-=math.pi
-                #     else:
-                #         Euler[2]+=math.pi
-                #     if marker_yaw > math.pi/2:
-                #         marker_yaw-=math.pi
-                #     else:
-                #         marker_yaw+=math.pi
 
-                    # aruco_Marker.surface = (Euler[2] - marker_yaw)*180/(math.pi)
+                    # Convert from Opencv frame to ROS frame in camera
+                    R = np.dot(R_ROS_O_camera, Rmat)
+
+                    # Convert inverted matrix from Opencv frame to ROS frame in marker
+                    R = np.dot(R, R_O_ROS_marker)
+
+                    # Convert from Rotation matrix to Euler angles
+                    Euler_b = rotationMatrixToEulerAngles(R.T) # rotace z markeru do kamery
+
+                
+                    # Fill Marker orientation vector
+                    aruco_Marker_b.pose.orientation.y = Euler_b[2]
+                    aruco_Marker_b.pose.orientation.r = Euler_b[0]
+                    aruco_Marker_b.pose.orientation.p = Euler_b[1]
+
+                    surface = cv2.contourArea(ch_corners, False)
+                    aruco_Marker_b.surface = surface
+                    # Surface - here used for display difference between board ang marker yaw
+                    # if marker_yaw is not None:
 
 
-                    # aruco_Marker.pose.orientation.r = -tvec[2] - x_tr - marker_x
-                    # aruco_Marker.pose.orientation.p = tvec[0] - y_tr - marker_y
+                    #     if Euler[2] > math.pi/2:
+                    #         Euler[2]-=math.pi
+                    #     else:
+                    #         Euler[2]+=math.pi
+                    #     if marker_yaw > math.pi/2:
+                    #         marker_yaw-=math.pi
+                    #     else:
+                    #         marker_yaw+=math.pi
+
+                        # aruco_Marker.surface = (Euler[2] - marker_yaw)*180/(math.pi)
 
 
-                # Coordinate vector of camera position from marker in camera coordinate frame
-                aruco_Marker_b.pose.position.x = -tvec[2]
-                aruco_Marker_b.pose.position.y = tvec[0]
-                aruco_Marker_b.pose.position.z = tvec[1]
+                        # aruco_Marker.pose.orientation.r = -tvec[2] - x_tr - marker_x
+                        # aruco_Marker.pose.orientation.p = tvec[0] - y_tr - marker_y
 
-                ## For compatibility with gazebo
-                aruco_Marker_b.header.stamp = time
 
-                # All coordinates are in marker frame
-                aruco_MarkerList_b.markers.append(aruco_Marker_b)
+                    # Coordinate vector of camera position from marker in camera coordinate frame
+                    aruco_Marker_b.pose.position.x = -tvec[2]
+                    aruco_Marker_b.pose.position.y = tvec[0]
+                    aruco_Marker_b.pose.position.z = tvec[1]
 
-                board_publisher.publish(aruco_MarkerList_b)
+                    ## For compatibility with gazebo
+                    aruco_Marker_b.header.stamp = time
+
+                    # All coordinates are in marker frame
+                    aruco_MarkerList_b.markers.append(aruco_Marker_b)
+
+                    board_publisher.publish(aruco_MarkerList_b)
 
         key = cv2.waitKey(1) & 0xFF
         if key == ord('s'):
@@ -376,7 +393,6 @@ def aruco_detect(camera_matrix, dist_coeff):
 
                 marker_pose[k,:] = aruco_Marker.pose.position.x,aruco_Marker.pose.position.y, yaw_m
                 board_pose[k,:] = aruco_Marker_b.pose.position.x,aruco_Marker_b.pose.position.y, yaw_b
-                pose_difference = board_pose - marker_pose
                 surface_matrix[k,:] = aruco_Marker.surface, aruco_Marker_b.surface
                 k +=1
 
@@ -387,7 +403,7 @@ def aruco_detect(camera_matrix, dist_coeff):
             avg_pose_m = np.mean(marker_pose, axis= 0)
             avg_pose_b = np.mean(board_pose, axis= 0)
             avg_surface = np.mean(surface_matrix,axis=0)
-            # avg_diff = np.mean(abs(pose_difference), axis= 0)
+            pose_difference = marker_pose - avg_pose_b
             measur_cov = np.cov(marker_pose,y = None, rowvar=False)
             # diff_cov = np.cov(pose_difference,y = None, rowvar=False)
             err_cov = np.sum(pose_difference*pose_difference, axis=0)/50

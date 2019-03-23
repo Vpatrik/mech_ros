@@ -24,13 +24,16 @@ class TimedOut(smach.State):
             rospy.loginfo('Already two unsuccessfull attempts for navigation to charging plug. Aborting!!!')
             return 'aborted'
         rospy.loginfo("Wait for complete navigation to charging station for %d seconds before timing out." % self.time)
+        rospy.loginfo("Attempt to navigate for charging # %d." % userdata.number_in)
         sleeping_step_size = 1 # [s]
+        waiting_time = self.time
 
-        while self.time > 0:
-            self.time -= sleeping_step_size
+        while waiting_time > 0:
+            waiting_time -= sleeping_step_size
             rospy.sleep(sleeping_step_size)
             if self.preempt_requested():
                 self.service_preempt()
+                userdata.number_out = userdata.number_in
                 rospy.loginfo('TimedOut state preempted!')
                 return 'preempted'
         userdata.number_out = userdata.number_in + 1
