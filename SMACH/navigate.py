@@ -212,7 +212,7 @@ class Navigate(smach.StateMachine):
     def recovery_goal_cb(self, userdata, goal):
 
         if not userdata.recovery_flag:
-            goal.behavior = 'clear_costmap'
+            goal.behavior = 'moveback_recovery'
             userdata.recovery_flag = True
         else:
             goal.behavior = 'rotate_recovery'

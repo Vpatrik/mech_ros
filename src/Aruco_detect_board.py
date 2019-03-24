@@ -15,7 +15,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from mech_ros_msgs.msg import MarkerList
 from mech_ros_msgs.msg import Marker
 
-filename = "/home/patrik/catkin_ws/src/mech_ros/src/Data.csv"
+filename = "/home/patrik/catkin_ws/src/mech_ros/src/Data_bocni_posuv.csv"
 filename_cov = "/home/patrik/catkin_ws/src/mech_ros/src/Covariances.csv"
 
 
@@ -75,18 +75,18 @@ arucoParams.minDistanceToBorder = 3
 ## Define Aruco board Detector Params
 arucoParams_b = cv2.aruco.DetectorParameters_create()
 arucoParams_b.adaptiveThreshConstant = 7
-arucoParams_b.adaptiveThreshWinSizeMax = 35 # default 23
+arucoParams_b.adaptiveThreshWinSizeMax = 45 # default 23
 arucoParams_b.adaptiveThreshWinSizeMin = 3 # default 3
-arucoParams_b.adaptiveThreshWinSizeStep = 8 # default 10
+arucoParams_b.adaptiveThreshWinSizeStep = 7 # default 10
 arucoParams_b.cornerRefinementMethod = 0
-arucoParams_b.errorCorrectionRate = 0.6
-arucoParams_b.minOtsuStdDev = 5.0
-arucoParams_b.perspectiveRemoveIgnoredMarginPerCell = 0.13
-arucoParams_b.perspectiveRemovePixelPerCell = 8
-arucoParams_b.polygonalApproxAccuracyRate = 0.01
+# arucoParams_b.errorCorrectionRate = 0.6
+# arucoParams_b.minOtsuStdDev = 5.0
+# arucoParams_b.perspectiveRemoveIgnoredMarginPerCell = 0.13
+# arucoParams_b.perspectiveRemovePixelPerCell = 8
+# arucoParams_b.polygonalApproxAccuracyRate = 0.01
 arucoParams_b.markerBorderBits = 1
-arucoParams_b.maxErroneousBitsInBorderRate = 0.04
-arucoParams_b.minDistanceToBorder = 3
+# arucoParams_b.maxErroneousBitsInBorderRate = 0.04
+# arucoParams_b.minDistanceToBorder = 3
 
 
 
@@ -307,7 +307,7 @@ def aruco_detect(camera_matrix, dist_coeff):
         if len(markerCorners_b) > 0:
             ret, ch_corners, ch_ids = cv2.aruco.interpolateCornersCharuco(markerCorners_b, markerIds_b, gray, board,camera_matrix, dist_coeff)
             cv2.aruco.drawDetectedMarkers(frame,markerCorners_b, markerIds_b)
-            if ret > 5:
+            if ret > 3:
                 ret_b, rvec, tvec = cv2.aruco.estimatePoseCharucoBoard(ch_corners, ch_ids, board, camera_matrix, dist_coeff) # For a single marker
                 
                 if ret_b:
@@ -318,7 +318,7 @@ def aruco_detect(camera_matrix, dist_coeff):
 
                     # cv2.aruco.drawAxis(frame, camera_matrix, dist_coeff, rvec[i], tvec[i], 0.1)
                     # imgpts, jac = cv2.projectPoints(axis, rvec[i], tvec[i], camera_matrix, dist_coeff)
-                    frame = draw(frame, markerCorners[i], imgpts)
+                    # frame = draw(frame, markerCorners[i], imgpts)
 
                     # Fill MarkerList with each marker
                     aruco_Marker_b = Marker()
@@ -413,7 +413,7 @@ def aruco_detect(camera_matrix, dist_coeff):
             # Write to file
             # x_m, y_m, Yaw_m, x_b, y_b, Yaw_b, var_meas_x, var_meas_y, var_meas_Yaw, var_err_x, var_err_y, var_err_Yaw
             row = [avg_surface[0], avg_surface[1], avg_pose_m[0],avg_pose_m[1], avg_pose_m[2],avg_pose_b[0],avg_pose_b[1], avg_pose_b[2],
-            measur_cov[0,0],measur_cov[1,1], measur_cov[2,2], err_cov[0,0], err_cov[1,1], err_cov[2,2]]
+            measur_cov[0,0],measur_cov[1,1], measur_cov[2,2], err_cov[0], err_cov[1], err_cov[2]]
 
             with open(filename, 'a') as csvFile:
                 writer = csv.writer(csvFile)
