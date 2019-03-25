@@ -58,7 +58,7 @@ output="screen" ns="/mechROS" args="base_control"> </node>
 
     <!-- Estimate pose from marker -->
    <node pkg="mech_ros" type="Estimated_pose_markers.py"  name="marker_pose_estimator">
-    <param name="markers_map" value="/home/patrik/catkin_ws/src/mech_ros/map/muzeum_aruco_markers.yaml" />
+    <param name="markers_map" value="$(find mech_ros)/map/muzeum_aruco_markers.yaml" />
     <param name="min_covariance" value="0.0001" />
     <param name="marker_detector_topic" value="/markers" />
     <param name="estimated_pose_topic" value="/estimated_pose_markers" />
@@ -78,6 +78,7 @@ output="screen" ns="/mechROS" args="base_control"> </node>
     <param name="lower_battery_threshold" value="3.5" />
     <param name="higher_battery_threshold" value="4.5" />
     <param name="timed_out" value="80" />
+    <param name="repetitions" value="2" />
     <param name="world_frame" value="map" />
     <param name="simulation" value="True" />
     <rosparam param="pose_before_station">[ -5.3,  -3.5,  0.0,

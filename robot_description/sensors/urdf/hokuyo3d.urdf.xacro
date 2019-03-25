@@ -20,7 +20,7 @@
 		<visual>
 			<origin xyz="0 0 0" rpy="0 0 0"/>
 			<geometry>
-	     		<mesh filename="file:///home/patrik/catkin_ws/src/mech_ros/robot_description/sensors/meshes/hokuyo3d.stl"/>
+	     		<mesh filename="$(find mech_ros)/robot_description/sensors/meshes/hokuyo3d.stl"/>
 			</geometry>
 		</visual>
 

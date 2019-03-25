@@ -58,7 +58,7 @@ output="screen" ns="/mechROS" args="base_control"> </node>
 
     <!-- Estimate pose from marker -->
    <node pkg="mech_ros" type="Estimated_pose_markers.py"  name="marker_pose_estimator">
-    <param name="markers_map" value="/home/patrik/catkin_ws/src/mech_ros/map/muzeum_aruco_markers.yaml" />
+    <param name="markers_map" value="$(find mech_ros)/map/muzeum_aruco_markers.yaml" />
     <param name="min_covariance" value="0.0001" />
     <param name="marker_detector_topic" value="/markers" />
     <param name="estimated_pose_topic" value="/estimated_pose_markers" />

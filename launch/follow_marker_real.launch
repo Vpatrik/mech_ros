@@ -22,7 +22,7 @@
   <node pkg="mech_ros" type="IMU_from_raw.py" name="converter" output="screen">
       <param name="calibrate_imu" value="True" />
       <param name="samples_number" value="1000" />
-      <param name="calibrations_file" value="/home/patrik/catkin_ws/src/mech_ros/localization/IMU_calibration.yaml" />
+      <param name="calibrations_file" value="$(find mech_ros)/localization/IMU_calibration.yaml" />
   </node>
 
     <!-- IMU Madgwick fusion -->
@@ -104,7 +104,7 @@
 
 <!-- Rosbag recording -->
     <node pkg="rosbag" type="record" name="rosbag_record"
-        args=" record -o /home/patrik/catkin_ws/src/mech_ros/bag_files/Follow/ -a"/>
+        args=" record -o $(find mech_ros)/bag_files/Follow/ -a"/>
 
 
  <!-- joy node -->
@@ -131,6 +131,8 @@
   <param name="max_angular_rate" value="1.3" />
   <param name="linear_rate" value="1.0" />
   <param name="max_linear_rate" value="0.17" />
+  <param name="linear_decay" value="0.96" />
+  <param name="hysteresis_count" value="30" />
 </node>
 
   

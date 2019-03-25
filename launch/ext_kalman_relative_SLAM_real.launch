@@ -68,7 +68,7 @@
         <!-- <param name="print_diagnostics" value="true"/>
       
         <param name="debug"           value="true"/>
-        <param name="debug_out_file"  value="/home/patrik/catkin_ws/src/mech_ros/debug/debug_ekf_rel_SLAM.txt"/> -->
+        <param name="debug_out_file"  value="$(find mech_ros)/debug/debug_ekf_rel_SLAM.txt"/> -->
 
 
         <rosparam param="process_noise_covariance">[0.05, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,

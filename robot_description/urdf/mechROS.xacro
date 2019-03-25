@@ -50,19 +50,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
    <color rgba=".01 1 .5 1"/>
 </material>
 
-<!--<material name="tire_texture">-->
-<!--    <texture filename="package://robot_description/textures/rubber.jpg" />-->
-<!--</material>-->
-
 <!-- Import files -->
 
-	<!--	<xacro:include filename="package://robot_description/urdf/rubber_wheel.urdf.xacro"/>-->
-	<xacro:include filename="/home/patrik/catkin_ws/src/mech_ros/robot_description/urdf/rubber_wheel.urdf.xacro"/>
-	<xacro:include filename="/home/patrik/catkin_ws/src/mech_ros/robot_description/urdf/mechROS_control.gazebo.xacro"/>
-
-
-	<!--<xacro:include filename="file:///home/patrik/catkin_ws/src/mech_ros/robot_description/sensors/urdf/all_sensors.urdf.xacro" />-->
-	<xacro:include filename="/home/patrik/catkin_ws/src/mech_ros/robot_description/sensors/urdf/all_sensors.urdf.xacro" />
+	<xacro:include filename="$(find mech_ros)/robot_description/urdf/rubber_wheel.urdf.xacro"/>
+	<xacro:include filename="$(find mech_ros)/robot_description/urdf/mechROS_control.gazebo.xacro"/>
+	<xacro:include filename="$(find mech_ros)/robot_description/urdf/mechROS_control.gazebo.xacro"/>
+	<xacro:include filename="$(find mech_ros)/robot_description/sensors/urdf/all_sensors.urdf.xacro" />
 
 
 <xacro:property name="PI" value="3.1415926535897931"/>
@@ -80,8 +73,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
     <visual>
      <origin xyz="0.011 -0.060276 0" rpy="${PI/2} 0 ${PI/2}"/>
      <geometry>
-<!--        <mesh filename="package://robot_description/meshes/Chassis.stl"/>-->
-	<mesh filename="file:///home/patrik/catkin_ws/src/mech_ros/robot_description/meshes/Chassis_10000.stl" scale="${Scale}"/>
+			<mesh filename="$(find mech_ros)/robot_description/meshes/Chassis_10000.stl" scale="${Scale}"/>
+
 <!--	<cylinder length="0.2" radius="0.4" />-->
      </geometry>
      <material name="gray_color"/>
@@ -154,39 +147,5 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 		<origin xyz="0.0 0.0 0.0804" rpy="0 0 0"/>
 	</xacro:sensor_hokuyo_urg04lx> 
 
-<!-- Import Laser -->
-	 <!-- <xacro:sensor_hokuyo_ust10lx prefix="laser" parent="$(arg prefix)base_link">
-	<origin xyz="0.00 0 0.0804" rpy="0 0 0"/>
-	</xacro:sensor_hokuyo_ust10lx>  -->
-
-
-
 <xacro:ros_control/>
-
-<!-- <xacro:skid_steering broadcastOdomTF="false" prefix="$(arg prefix)" wheelSeparation="0.18" wheelDiameter="0.1"/> -->
-
-
-<!--<link name="camera">-->
-<!--    <visual>-->
-<!--	<origin xyz="0 0 0" rpy="0 ${-PI/2} ${PI}"/>-->
-<!--     <geometry>-->
-<!--        <mesh filename="file:///home/patrik/catkin_ws/src/mech_ros/robot_description/meshes/Camera.stl" scale="${Scale}"/>-->
-<!--      </geometry>-->
-<!--     <material name="camera_color"/>-->
-<!--    </visual>-->
-<!--    <collision>-->
-<!--      <origin xyz="0 0 0" rpy="0 0 0"/>-->
-<!--      <geometry>-->
-<!--        <box size="0.01 0.2 0.05"/>-->
-<!--      </geometry>-->
-<!--    </collision>-->
-<!--</link>-->
-
-<!-- JOINTS -->
-<!-- ////////////////////////////////////////////////// -->
- 
-<!--<xacro:Joint_f name="Body" parent="base_link" child="camera" xyz="0.088 0 0.0204" rpy="0 0 0"/>-->
- 
-
-
 </robot>

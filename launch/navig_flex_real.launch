@@ -22,7 +22,7 @@
   <node pkg="mech_ros" type="IMU_from_raw.py" name="converter" output="screen">
       <param name="calibrate_imu" value="True" />
       <param name="samples_number" value="1000" />
-      <param name="calibrations_file" value="/home/patrik/catkin_ws/src/mech_ros/localization/IMU_calibration.yaml" />
+      <param name="calibration_file" value="$(find mech_ros)/localization/IMU_calibration.yaml" />
   </node>
 
     <!-- IMU Madgwick fusion -->
@@ -99,7 +99,8 @@
 <node pkg="mech_ros" type="complete_SMACH.py" name="mbf_move_base_action" output="screen">
     <param name="lower_battery_threshold" value="3.5" />
     <param name="higher_battery_threshold" value="4.5" />
-    <param name="timed_out" value="100" />
+    <param name="timed_out" value="120" />
+    <param name="repetitions" value="2" />
     <param name="world_frame" value="map" />
     <param name="simulation" value="False" />
     <rosparam param="pose_before_station">[ 2.2,  0.085,  0.0,
@@ -109,15 +110,12 @@
 </node>
 
  
- <!-- Charging station -->
-<node pkg="mech_ros" type="Charging_station.py" name="charging_station" output="screen"/>
-
  <!-- Kinematics -->
   <node pkg="mech_ros" type="Kinematics.py" name="kinematics"/>
 
 <!-- Rosbag recording -->
     <node pkg="rosbag" type="record" name="rosbag_record"
-        args=" record -o /home/patrik/catkin_ws/src/mech_ros/bag_files/Navig/ -a"/>
+        args=" record -o $(find mech_ros)/bag_files/Navig/ -a"/>
 
 
  <!-- joy node -->

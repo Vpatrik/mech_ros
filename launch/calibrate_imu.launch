@@ -3,7 +3,7 @@
   <node pkg="mech_ros" type="IMU_from_raw.py" name="converter" output="screen">
       <param name="calibrate_imu" value="False" />
       <param name="samples_number" value="1000" />
-      <param name="calibrations_file" value="/home/patrik/catkin_ws/src/mech_ros/localization/IMU_calibration.yaml" />
+      <param name="calibrations_file" value="$(find mech_ros)/localization/IMU_calibration.yaml" />
 
   </node>
 
@@ -14,7 +14,7 @@
     <param name="max_samples_imu" value="100000" />
    <param name="imu_topic" value="/imu/data_raw" />
    <param name="mag_topic" value="imu/mag" />
-    <param name="calibrations_dir" value="/home/patrik/catkin_ws/src/mech_ros/bag_files/Mereni_IMU" />
+    <param name="calibrations_dir" value="$(find mech_ros)/bag_files/Mereni_IMU" />
   </node>
 </launch>
 

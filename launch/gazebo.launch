@@ -7,7 +7,6 @@
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
   <arg name="model" default="$(find mech_ros)/robot_description/urdf/mechROS.xacro"/>
-<!--<arg name="model" default="/home/patrik/catkin_ws/src/mech_ros/robot_description/urdf/mechROS.urdf.xacro"/>-->
   <arg name="x_pos" default="-3.5"/>
   <arg name="y_pos" default="-2.5"/>
   <arg name="z_pos" default="0.03"/>

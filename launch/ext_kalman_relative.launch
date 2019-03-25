@@ -54,7 +54,7 @@
         <param name="print_diagnostics" value="true"/>
       
         <!-- <param name="debug"           value="true"/>
-        <param name="debug_out_file"  value="/home/patrik/catkin_ws/src/mech_ros/debug/debug_ekf_rel.txt"/> -->
+        <param name="debug_out_file"  value="$(find mech_ros)/debug/debug_ekf_rel.txt"/> -->
       
         <!-- <rosparam param="control_config">[true,  false, false,
                                   false, false, true]</rosparam> -->

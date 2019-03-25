@@ -31,6 +31,6 @@
 <!-- Rosbag recording -->
     <node pkg="rosbag" type="record" name="rosbag_record"
     
-        args=" record -o /home/patrik/catkin_ws/src/mech_ros/bag_files/ -a"/>
+        args=" record -o $(find mech_ros)/bag_files/ -a"/>
 
 </launch>

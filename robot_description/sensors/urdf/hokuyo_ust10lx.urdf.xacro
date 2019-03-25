@@ -53,7 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
       <visual>
         <origin xyz="0 0 0.0" rpy="0 0 0"/>
         <geometry>
-            <mesh filename="file:///home/patrik/catkin_ws/src/mech_ros/robot_description/sensors/meshes/hokuyo_ust_10lx.dae"/>
+            <mesh filename="$(find mech_ros)/robot_description/sensors/meshes/hokuyo_ust_10lx.dae"/>
         </geometry>
       </visual>
   

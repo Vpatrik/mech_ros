@@ -41,7 +41,7 @@
 <!--     <origin xyz="0 0 0" rpy="0 ${PI/2} 0"/>-->
 	<origin xyz="0 0 0" rpy="0 ${-PI/2} ${PI}"/>
      <geometry>
-        <mesh filename="file:///home/patrik/catkin_ws/src/mech_ros/robot_description/meshes/Camera_2000_simplified.stl" scale="${Scale}"/>
+        <mesh filename="$(find mech_ros)/robot_description/meshes/Camera_2000_simplified.stl" scale="${Scale}"/>
       </geometry>
      <material name="camera_color"/>
     </visual>

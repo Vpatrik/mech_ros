@@ -13,7 +13,7 @@
   <!-- <node pkg="mech_ros" type="IMU_from_raw.py" name="converter" output="screen">
       <param name="calibrate_imu" value="False" />
       <param name="samples_number" value="1000" />
-      <param name="calibrations_file" value="/home/patrik/catkin_ws/src/mech_ros/localization/IMU_calibration.yaml" />
+      <param name="calibrations_file" value="$(find mech_ros)/localization/IMU_calibration.yaml" />
 
   </node> -->
 
@@ -50,7 +50,7 @@
 
 <!-- Rosbag recording -->
     <!-- <node pkg="rosbag" type="record" name="rosbag_record"
-        args=" record -o /home/patrik/catkin_ws/src/mech_ros/bag_files/Mereni_madgwick/draha_stale_rychlosti_primka -a"/> -->
+        args=" record -o $(find mech_ros)/bag_files/Mereni_madgwick/draha_stale_rychlosti_primka -a"/> -->
 
 
 </launch>

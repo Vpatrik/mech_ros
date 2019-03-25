@@ -12,16 +12,17 @@ import tf2_geometry_msgs
 class TimedOut(smach.State):
 
 
-    def __init__(self, time=10):
+    def __init__(self, time=10, repetitions=2):
         smach.State.__init__(self, outcomes=['timed_out', 'preempted', 'aborted'],
                              input_keys=['number_in'],
                              output_keys= ['number_out'])
         self.time = time
+        self.repetitions = repetitions
 
     def execute(self, userdata):
 
-        if userdata.number_in > 2:
-            rospy.loginfo('Already two unsuccessfull attempts for navigation to charging plug. Aborting!!!')
+        if userdata.number_in > self.repetitions:
+            rospy.loginfo('Number of repetitions bigger than specified. Aborting!!!')
             return 'aborted'
         rospy.loginfo("Wait for complete navigation to charging station for %d seconds before timing out." % self.time)
         rospy.loginfo("Attempt to navigate for charging # %d." % userdata.number_in)

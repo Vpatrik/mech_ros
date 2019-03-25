@@ -26,6 +26,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 
   <xacro:property name="M_PI" value="3.1415926535897931" />
+
   <!-- Wheels -->
   <xacro:property name="wheel_radius" value="0.05" /> 
   <xacro:property name="wheel_height" value="0.031" /> <!-- really is the wheel width -->
@@ -35,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 <xacro:property name="Scale" value="${scale} ${scale} ${scale}"/>
 
 <material name="tire_texture">
-    <texture filename="file:///home/patrik/catkin_ws/src/mech_ros/robot_description/textures/rubber.jpg" />
+    <texture filename="$(find mech_ros)/robot_description/textures/rubber.jpg" />
 </material>
  
   <xacro:macro name="rubber_wheel" params="prefix parent *origin reflect">
@@ -47,7 +48,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
       <child link="${prefix}_wheel"/>
       <xacro:insert_block name="origin" />
       <axis xyz="0 1 0" rpy="0 0 0" />
-      <!-- <limit effort="100" velocity="100"/> -->
       <limit effort="1000" velocity="1000" />
       <joint_properties damping="0.0" friction="0.0"/>
     </joint>
@@ -65,7 +65,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 	      </xacro:unless>
 
         <geometry>           
-             <mesh filename="file:///home/patrik/catkin_ws/src/mech_ros/robot_description/meshes/Wheel_hub_simplified.stl" scale="${Scale}"/> 
+             <mesh filename="$(find mech_ros)/robot_description/meshes/Wheel_hub_simplified.stl" scale="${Scale}"/> 
         </geometry>
 	      <material name="tire_texture"/>      
       </visual>
@@ -87,19 +87,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
       <surface>
         <friction>
           <ode>
-          <!-- This works well enough -->
-            <!-- <mu>1.0</mu>
-            <mu2>0.3</mu2>
-            <slip1>0.5</slip1>
-            <slip2>0.0</slip2>
-            <fdir1 value="1 0 0"/> -->
-
             <mu>1.0</mu>
             <mu2>1.0</mu2>
             <slip1>0.5</slip1>
             <slip2>0.0</slip2>
             <fdir1 value="1 0 0"/>
-
           </ode>
         </friction>
       </surface>
@@ -137,29 +129,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
       </actuator>
     </transmission>
 
-	<!-- <transmission name="${prefix}_wheel_joint_trans">
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="${prefix}_wheel_joint">
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="${prefix}_wheel_joint_motor">
-        <mechanicalReduction>1</mechanicalReduction>
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-      </actuator>
-  </transmission> -->
-
     <gazebo reference="${prefix}_wheel">
-
-			<!-- <mu1 value="1.0"/>
-      <mu2 value="1.0"/>
-			<kp value="10000000.0" />
-			<kd value="1.0" />
-			<fdir1 value="1 0 0"/> -->
-
-			<!-- <mu2 value="1.0"/> -->
-			<!-- <slip11 value="0.5"/>
-			<slip2 value="0.0"/>       -->
-
 	    <material>Gazebo/Residential</material>
       <turnGravityOff>false</turnGravityOff>
     </gazebo>

@@ -41,6 +41,7 @@ def main():
     plug_list = rospy.get_param("~pose_plug", [-5.3,-4.5,0,0,0.707106781,0.707106781])
     world_frame = rospy.get_param("~world_frame", 'map')
     simulation = rospy.get_param("~simulation", 'False')
+    repetitions = rospy.get_param("~repetitions", 2)
 
     # # Convert pose from list data type to ROS PoseStamped
     before_station.header.frame_id = world_frame
@@ -271,7 +272,7 @@ def main():
             ################ END of complete navigation from arbitrary place to plug in charging station #######################
 
             smach.Concurrence.add('TIMING_OUT',
-                                TimedOut(time = timed_out),
+                                TimedOut(time = timed_out, repetitions= repetitions),
                                 remapping={'number_in': 'sm_number_in', 'number_out': 'sm_number_out'})
 
         smach.StateMachine.add('NAVIGATION_TO_CHARGE_WITH_CONTROL',
