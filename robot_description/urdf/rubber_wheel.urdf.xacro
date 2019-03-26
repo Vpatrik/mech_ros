@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 <xacro:property name="Scale" value="${scale} ${scale} ${scale}"/>
 
 <material name="tire_texture">
-    <texture filename="$(find mech_ros)/robot_description/textures/rubber.jpg" />
+    <texture filename="package://mech_ros/robot_description/textures/rubber.jpg" />
 </material>
  
   <xacro:macro name="rubber_wheel" params="prefix parent *origin reflect">
@@ -65,7 +65,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 	      </xacro:unless>
 
         <geometry>           
-             <mesh filename="$(find mech_ros)/robot_description/meshes/Wheel_hub_simplified.stl" scale="${Scale}"/> 
+             <mesh filename="package://mech_ros/robot_description/meshes/Wheel_hub_simplified.stl" scale="${Scale}"/> 
         </geometry>
 	      <material name="tire_texture"/>      
       </visual>

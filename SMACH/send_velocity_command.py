@@ -24,7 +24,7 @@ class PublishVelocity(smach.State):
             if self.message_number > 2:
                 self.signal.set()
             self.message_number += 1
-            self.signal.wait(0.1)
+            self.signal.wait(0.25)
 
         if self.preempt_requested() or rospy.is_shutdown():
             self.service_preempt()

@@ -1,29 +1,30 @@
 <?xml version="1.0"?>
-<robot name="pi_camera" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="pi_camera" 
+  xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-<!--Copyright (c) 2014, Robotnik Automation-->
-<!--All rights reserved.-->
+  <!--Copyright (c) 2014, Robotnik Automation-->
+  <!--All rights reserved.-->
 
-<!--Redistribution and use in source and binary forms, with or without-->
-<!--modification, are permitted provided that the following conditions are met:-->
+  <!--Redistribution and use in source and binary forms, with or without-->
+  <!--modification, are permitted provided that the following conditions are met:-->
 
-<!--* Redistributions of source code must retain the above copyright notice, this-->
-<!--  list of conditions and the following disclaimer.-->
+  <!--* Redistributions of source code must retain the above copyright notice, this-->
+  <!--  list of conditions and the following disclaimer.-->
 
-<!--* Redistributions in binary form must reproduce the above copyright notice,-->
-<!--  this list of conditions and the following disclaimer in the documentation-->
-<!--  and/or other materials provided with the distribution.-->
+  <!--* Redistributions in binary form must reproduce the above copyright notice,-->
+  <!--  this list of conditions and the following disclaimer in the documentation-->
+  <!--  and/or other materials provided with the distribution.-->
 
-<!--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"-->
-<!--AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE-->
-<!--IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE-->
-<!--DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE-->
-<!--FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL-->
-<!--DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR-->
-<!--SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER-->
-<!--CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,-->
-<!--OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE-->
-<!--OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
+  <!--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"-->
+  <!--AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE-->
+  <!--IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE-->
+  <!--DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE-->
+  <!--FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL-->
+  <!--DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR-->
+  <!--SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER-->
+  <!--CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,-->
+  <!--OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE-->
+  <!--OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
   <xacro:property name="M_PI" value="3.1415926535897931" />
 
@@ -37,18 +38,18 @@
     </joint>
 
     <link name="${prefix}_camera_link">
- 	<visual>
-<!--     <origin xyz="0 0 0" rpy="0 ${PI/2} 0"/>-->
-	<origin xyz="0 0 0" rpy="0 ${-PI/2} ${PI}"/>
-     <geometry>
-        <mesh filename="$(find mech_ros)/robot_description/meshes/Camera_2000_simplified.stl" scale="${Scale}"/>
-      </geometry>
-     <material name="camera_color"/>
-    </visual>
+      <visual>
+        <!--     <origin xyz="0 0 0" rpy="0 ${PI/2} 0"/>-->
+        <origin xyz="0 0 0" rpy="0 ${-PI/2} ${PI}"/>
+        <geometry>
+          <mesh filename="package://mech_ros/robot_description/meshes/Camera_2000_simplified.stl" scale="${Scale}"/>
+        </geometry>
+        <material name="camera_color"/>
+      </visual>
       <collision>
         <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
         <geometry>
-        <box size="0.001 0.03 0.03"/>
+          <box size="0.001 0.03 0.03"/>
         </geometry>
       </collision>
       <inertial>
@@ -58,61 +59,61 @@
         <inertia ixx="0.00003881243" ixy="0.0" ixz="0.0" iyy="0.00000498940" iyz="0.0" izz="0.00003879257" />
       </inertial>
     </link>
-   
-  <!-- camera -->
-  <gazebo reference="${prefix}_camera_link">
-    <sensor type="camera" name="camera1">
-      <update_rate>30.0</update_rate>
-      <camera name="head">
-        <horizontal_fov>1.3962634</horizontal_fov>
-        <image>
-          <width>1280</width>
-          <height>720</height>
-          <format>R8G8B8</format>
-        </image>
-        <clip>
-          <near>0.02</near>
-          <far>300</far>
-        </clip>
-        <noise>
-          <type>gaussian</type>
-          <!-- Noise is sampled independently per pixel on each frame.
+
+    <!-- camera -->
+    <gazebo reference="${prefix}_camera_link">
+      <sensor type="camera" name="camera1">
+        <update_rate>30.0</update_rate>
+        <camera name="head">
+          <horizontal_fov>1.3962634</horizontal_fov>
+          <image>
+            <width>1280</width>
+            <height>720</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.02</near>
+            <far>300</far>
+          </clip>
+          <noise>
+            <type>gaussian</type>
+            <!-- Noise is sampled independently per pixel on each frame.
                That pixel's noise value is added to each of its color
                channels, which at that point lie in the range [0,1]. -->
-          <mean>0.0</mean>
-          <stddev>0.007</stddev>
-        </noise>
-      </camera>
-      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
-        <alwaysOn>true</alwaysOn>
-        <updateRate>0.0</updateRate>
-        <cameraName>pi_camera</cameraName>
-        <imageTopicName>image_raw</imageTopicName>
-        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-        <frameName>front_camera_link</frameName>
-        <hackBaseline>0.0</hackBaseline>
-        <!-- <distortionK1>0.12229709180689073</distortionK1>
+            <mean>0.0</mean>
+            <stddev>0.007</stddev>
+          </noise>
+        </camera>
+        <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>0.0</updateRate>
+          <cameraName>pi_camera</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>front_camera_link</frameName>
+          <hackBaseline>0.0</hackBaseline>
+          <!-- <distortionK1>0.12229709180689073</distortionK1>
         <distortionK2>0.024010173426467347</distortionK2>
         <distortionK3>-1.8227973245663944</distortionK3>
         <distortionT1>0.017489177150311525</distortionT1>
         <distortionT2>0.0025341869220518796</distortionT2> -->
-        <distortionK1>0.0</distortionK1>
-        <distortionK2>0.0</distortionK2>
-        <distortionK3>0.0</distortionK3>
-        <distortionT1>0.0</distortionT1>
-        <distortionT2>0.0</distortionT2>
-        
-        <!-- Added 16.1.2019, if not working due to change, delete -->
-        <!-- <CxPrime>0</CxPrime> -->
-        <!-- <Cx>0.0</Cx>
+          <distortionK1>0.0</distortionK1>
+          <distortionK2>0.0</distortionK2>
+          <distortionK3>0.0</distortionK3>
+          <distortionT1>0.0</distortionT1>
+          <distortionT2>0.0</distortionT2>
+
+          <!-- Added 16.1.2019, if not working due to change, delete -->
+          <!-- <CxPrime>0</CxPrime> -->
+          <!-- <Cx>0.0</Cx>
         <Cy>0.0</Cy> -->
-        <!-- <focalLength>762.724934</focalLength> -->
-      </plugin>
-    </sensor>
-    <material>Gazebo/Grass</material>
-  </gazebo>
-  
+          <!-- <focalLength>762.724934</focalLength> -->
+        </plugin>
+      </sensor>
+      <material>Gazebo/Grass</material>
+    </gazebo>
+
   </xacro:macro>
-  
-  
+
+
 </robot>

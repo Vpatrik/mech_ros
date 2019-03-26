@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0"?>
-<robot name="mechROS" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="mechROS" 
+	xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 
-<!-- Copyright (c) 2014, Robotnik Automation
+	<!-- Copyright (c) 2014, Robotnik Automation
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,31 +27,33 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 
-<!-- PROPERTIES & MACROS -->
-<!-- ////////////////////////////////////////////////// -->
+	<!-- PROPERTIES & MACROS -->
+	<!-- ////////////////////////////////////////////////// -->
 
-<!-- Robot name -->
-<xacro:arg name="prefix" default="mechROS_"/>
-<xacro:arg name="wheel_offset_y" default="0.0735" /> 
+	<!-- Robot name -->
+	<xacro:arg name="prefix" default="mechROS_"/>
+	<xacro:arg name="wheel_offset_y" default="0.0735" />
 
-<!-- SCALE definition -->
-<xacro:property name="scale" value="0.01"/>    <!-- meritko-->
-<xacro:property name="Scale" value="${scale} ${scale} ${scale}"/>
+	<!-- SCALE definition -->
+	<xacro:property name="scale" value="0.01"/>
+	<!-- meritko-->
+	<xacro:property name="Scale" value="${scale} ${scale} ${scale}"/>
 
-<!-- Wheel parameters -->
-<xacro:property name="wheel_offset_x" value="0.063" />    <!-- x,y,z in translation from base_link to the center of the wheel -->
-<xacro:property name="wheel_offset_y" value="0.0735" />    
-<xacro:property name="wheel_offset_z" value="0.018" />
+	<!-- Wheel parameters -->
+	<xacro:property name="wheel_offset_x" value="0.063" />
+	<!-- x,y,z in translation from base_link to the center of the wheel -->
+	<xacro:property name="wheel_offset_y" value="0.0735" />
+	<xacro:property name="wheel_offset_z" value="0.018" />
 
 
-<!-- MATERIALS -->
-<!-- ////////////////////////////////////////////////// -->
+	<!-- MATERIALS -->
+	<!-- ////////////////////////////////////////////////// -->
 
-<material name="camera_color">
-   <color rgba=".01 1 .5 1"/>
-</material>
+	<material name="camera_color">
+		<color rgba=".01 1 .5 1"/>
+	</material>
 
-<!-- Import files -->
+	<!-- Import files -->
 
 	<xacro:include filename="$(find mech_ros)/robot_description/urdf/rubber_wheel.urdf.xacro"/>
 	<xacro:include filename="$(find mech_ros)/robot_description/urdf/mechROS_control.gazebo.xacro"/>
@@ -58,64 +61,63 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 	<xacro:include filename="$(find mech_ros)/robot_description/sensors/urdf/all_sensors.urdf.xacro" />
 
 
-<xacro:property name="PI" value="3.1415926535897931"/>
+	<xacro:property name="PI" value="3.1415926535897931"/>
 
-<material name="gray_color">
-    <color rgba=".75 .75 .75 1"/>
- </material>
+	<material name="gray_color">
+		<color rgba=".75 .75 .75 1"/>
+	</material>
 
-<!-- LINKS -->
-<!-- ////////////////////////////////////////////////// -->
-
-
-
-<link name="$(arg prefix)base_link">
-    <visual>
-     <origin xyz="0.011 -0.060276 0" rpy="${PI/2} 0 ${PI/2}"/>
-     <geometry>
-			<mesh filename="$(find mech_ros)/robot_description/meshes/Chassis_10000.stl" scale="${Scale}"/>
-
-<!--	<cylinder length="0.2" radius="0.4" />-->
-     </geometry>
-     <material name="gray_color"/>
-    </visual>
-    <collision>
-      <origin xyz="0.008 0 0.023" rpy="0 0 0"/>
-      <geometry>
-        <box size="0.242 0.11 0.085"/>
-      </geometry>
-    </collision>
-</link>
-
-<link name="Inertia">
-<!-- !!!!!!!!!!!!!!!!!!!-->
-<!--NASTAVAIT SPRAVNE INERTIAL-->
-    <inertial>
-      <origin xyz="0 0 0.02" />
-      <mass value="1.172" />
-<!--	<mass value="1" />-->
-      <inertia  ixx="0.001568" ixy="0.0"  ixz="0.0"  iyy="0.003775"  iyz="0.0"  izz="0.00483" />
-    </inertial>
-</link>
-
-<joint name="$(arg prefix)base_link" type="fixed">
-	<parent link="$(arg prefix)base_link"/>
-	<child link="Inertia"/>
-	<origin xyz="0.0 0.0 0.0"/>
-</joint>
+	<!-- LINKS -->
+	<!-- ////////////////////////////////////////////////// -->
 
 
-<gazebo reference="$(arg prefix)base_link">
-	<material>Gazebo/GreyGradientSky</material>
-      <turnGravityOff>false</turnGravityOff>
- </gazebo>
+
+	<link name="$(arg prefix)base_link">
+		<visual>
+			<origin xyz="0.011 -0.060276 0" rpy="${PI/2} 0 ${PI/2}"/>
+			<geometry>
+				<mesh filename="package://mech_ros/robot_description/meshes/Chassis_10000.stl" scale="${Scale}"/>
+
+			</geometry>
+			<material name="gray_color"/>
+		</visual>
+		<collision>
+			<origin xyz="0.008 0 0.023" rpy="0 0 0"/>
+			<geometry>
+				<box size="0.242 0.11 0.085"/>
+			</geometry>
+		</collision>
+	</link>
+
+	<link name="Inertia">
+		<!-- !!!!!!!!!!!!!!!!!!!-->
+		<!--NASTAVAIT SPRAVNE INERTIAL-->
+		<inertial>
+			<origin xyz="0 0 0.02" />
+			<mass value="1.172" />
+			<!--	<mass value="1" />-->
+			<inertia ixx="0.001568" ixy="0.0" ixz="0.0" iyy="0.003775" iyz="0.0" izz="0.00483" />
+		</inertial>
+	</link>
+
+	<joint name="$(arg prefix)base_link" type="fixed">
+		<parent link="$(arg prefix)base_link"/>
+		<child link="Inertia"/>
+		<origin xyz="0.0 0.0 0.0"/>
+	</joint>
 
 
-		<!-- *************** -->
-		<!-- Robots Elements -->
-		<!-- *************** -->
+	<gazebo reference="$(arg prefix)base_link">
+		<material>Gazebo/GreyGradientSky</material>
+		<turnGravityOff>false</turnGravityOff>
+	</gazebo>
 
-		<!-- Here we create the robot elements using the xacro:macros imported at the beggining of this file -->
+
+	<!-- *************** -->
+	<!-- Robots Elements -->
+	<!-- *************** -->
+
+	<!-- Here we create the robot elements using the xacro:macros imported at the beggining of this file -->
 	<xacro:rubber_wheel prefix="front_right" parent="$(arg prefix)base_link" reflect="false">
 		<origin xyz="${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
 	</xacro:rubber_wheel>
@@ -132,20 +134,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 		<origin xyz="-${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
 	</xacro:rubber_wheel>
 
-<!-- Import IMU -->
+	<!-- Import IMU -->
 	<xacro:sensor_imu_hector prefix="imu" parent="$(arg prefix)base_link">
 		<origin xyz="0 0.0 0.055" rpy="0 0 0"/>
 	</xacro:sensor_imu_hector>
-<!-- Import PiCamera -->
+	
+	<!-- Import PiCamera -->
 	<xacro:pi_camera_sensor prefix="front" parent="$(arg prefix)base_link">
-<!--		<origin xyz="0.088 0 0.0204" rpy="0 0 0"/>-->
-	<origin xyz="0.088 0 0.0204" rpy="0 0 0"/>
+		<!--		<origin xyz="0.088 0 0.0204" rpy="0 0 0"/>-->
+		<origin xyz="0.088 0 0.0204" rpy="0 0 0"/>
 	</xacro:pi_camera_sensor>
 
-<!-- Import Laser -->
-	 <xacro:sensor_hokuyo_urg04lx prefix="laser" parent="$(arg prefix)base_link">
+	<!-- Import Laser -->
+	<xacro:sensor_hokuyo_urg04lx prefix="laser" parent="$(arg prefix)base_link">
 		<origin xyz="0.0 0.0 0.0804" rpy="0 0 0"/>
-	</xacro:sensor_hokuyo_urg04lx> 
+	</xacro:sensor_hokuyo_urg04lx>
 
-<xacro:ros_control/>
+	<xacro:ros_control/>
 </robot>
