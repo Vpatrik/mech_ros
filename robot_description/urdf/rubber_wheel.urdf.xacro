@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
-<robot name="wheel" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="wheel" 
+  xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-<!-- Copyright (c) 2014, Robotnik Automation
+  <!-- Copyright (c) 2014, Robotnik Automation
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -28,20 +29,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
   <xacro:property name="M_PI" value="3.1415926535897931" />
 
   <!-- Wheels -->
-  <xacro:property name="wheel_radius" value="0.05" /> 
-  <xacro:property name="wheel_height" value="0.031" /> <!-- really is the wheel width -->
-  <xacro:property name="wheel_mass" value="0.079" /> <!-- in kg-->
- <!-- SCALE definition -->
-<xacro:property name="scale" value="0.01"/>    <!-- meritko-->
-<xacro:property name="Scale" value="${scale} ${scale} ${scale}"/>
+  <xacro:property name="wheel_radius" value="0.05" />
+  <xacro:property name="wheel_height" value="0.031" />
+  <!-- really is the wheel width -->
+  <xacro:property name="wheel_mass" value="0.079" />
+  <!-- in kg-->
+  <!-- SCALE definition -->
+  <xacro:property name="scale" value="0.01"/>
+  <!-- meritko-->
+  <xacro:property name="Scale" value="${scale} ${scale} ${scale}"/>
 
-<material name="tire_texture">
+  <material name="tire_texture">
     <texture filename="package://mech_ros/robot_description/textures/rubber.jpg" />
-</material>
- 
+  </material>
+
   <xacro:macro name="rubber_wheel" params="prefix parent *origin reflect">
-  
-<!--WHEEL TIRE -->
+
+    <!--WHEEL TIRE -->
 
     <joint name="${prefix}_wheel_joint" type="continuous">
       <parent link="${parent}"/>
@@ -51,33 +55,33 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
       <limit effort="1000" velocity="1000" />
       <joint_properties damping="0.0" friction="0.0"/>
     </joint>
-  
+
 
     <link name="${prefix}_wheel">
 
       <visual>
-          <xacro:if value="${reflect}">
-		        <origin xyz="0 0.003 0" rpy="${-M_PI/2} 0 0" />
-	        </xacro:if>
+        <xacro:if value="${reflect}">
+          <origin xyz="0 0.003 0" rpy="${-M_PI/2} 0 0" />
+        </xacro:if>
 
-	      <xacro:unless value="${reflect}">
-		      <origin xyz="0 -0.003 0" rpy="${M_PI/2} 0 0" />
-	      </xacro:unless>
+        <xacro:unless value="${reflect}">
+          <origin xyz="0 -0.003 0" rpy="${M_PI/2} 0 0" />
+        </xacro:unless>
 
-        <geometry>           
-             <mesh filename="package://mech_ros/robot_description/meshes/Wheel_hub_simplified.stl" scale="${Scale}"/> 
+        <geometry>
+          <mesh filename="package://mech_ros/robot_description/meshes/Wheel_hub_simplified.stl" scale="${Scale}"/>
         </geometry>
-	      <material name="tire_texture"/>      
+        <material name="tire_texture"/>
       </visual>
-      
-      <collision>
-          <xacro:if value="${reflect}">
-		        <origin xyz="0 0.003 0" rpy="${M_PI/2} 0 0" />
-	        </xacro:if>
 
-	        <xacro:unless value="${reflect}">
-		        <origin xyz="0 -0.003 0" rpy="${M_PI/2} 0 0" />
-	        </xacro:unless>
+      <collision>
+        <xacro:if value="${reflect}">
+          <origin xyz="0 0.003 0" rpy="${M_PI/2} 0 0" />
+        </xacro:if>
+
+        <xacro:unless value="${reflect}">
+          <origin xyz="0 -0.003 0" rpy="${M_PI/2} 0 0" />
+        </xacro:unless>
 
         <geometry>
           <cylinder length="${wheel_height}" radius="${wheel_radius}" />
@@ -99,25 +103,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 
       <inertial>
         <mass value="${wheel_mass}" />
-	      <xacro:if value="${reflect}">
-		      <origin xyz="0 0.003 0" rpy="0 0 0" />
-	      </xacro:if>
+        <xacro:if value="${reflect}">
+          <origin xyz="0 0.003 0" rpy="0 0 0" />
+        </xacro:if>
 
-	      <xacro:unless value="${reflect}">
-		      <origin xyz="0 -0.003 0" rpy="0 0 0" />
-	      </xacro:unless>
+        <xacro:unless value="${reflect}">
+          <origin xyz="0 -0.003 0" rpy="0 0 0" />
+        </xacro:unless>
         <!-- <origin xyz="0 0 0" /> -->
 
-	      <inertia  ixx="0.00069" ixy = "0" ixz = "0"
-              iyy="0.0012057" iyz = "0"
-              izz="0.00069" />
-        </inertial>
+        <inertia ixx="0.00069" ixy = "0" ixz = "0" iyy="0.0012057" iyz = "0" izz="0.00069" />
+      </inertial>
     </link>
 
-    
+
     <!-- Transmission is important to link the joints and the controller (see summit_xl_control/config/summit_xl_control.yaml)-->
-  
-	<transmission name="${prefix}_wheel_joint_trans">
+
+    <transmission name="${prefix}_wheel_joint_trans">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="${prefix}_wheel_joint">
         <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
@@ -130,12 +132,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
     </transmission>
 
     <gazebo reference="${prefix}_wheel">
-	    <material>Gazebo/Residential</material>
+      <material>Gazebo/Residential</material>
       <turnGravityOff>false</turnGravityOff>
     </gazebo>
-    
 
-   
+
+
   </xacro:macro>
 
 </robot>

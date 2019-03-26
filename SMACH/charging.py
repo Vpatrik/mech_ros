@@ -31,9 +31,15 @@ import rospy
 import smach
 import smach_ros
 
+if hasattr(smach.CBInterface, '__get__'):
+    from smach import cb_interface
+else:
+    from smach_polyfill import cb_interface
+
 from navigate import Navigate
 from monitor_battery import WaitForBatteryLevel
 from send_velocity_command import PublishVelocity
+from set_pose import SetPoseKalman
 
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Twist
@@ -44,8 +50,12 @@ from std_srvs.srv import Trigger
 from std_srvs.srv import TriggerRequest
 from std_srvs.srv import TriggerResponse
 
+from robot_localization.srv import SetPose
+from robot_localization.srv import SetPoseRequest
+from robot_localization.srv import SetPoseResponse
+
 class Charging(smach.StateMachine):
-    def __init__(self, charge_level = 4.5, before_station = None):
+    def __init__(self, charge_level = 4.5, before_station = None, pose = None):
         smach.StateMachine.__init__(self,
             outcomes=['succeeded', 'preempted', 'aborted'],
             input_keys=['sm_recovery_flag'])
@@ -54,17 +64,35 @@ class Charging(smach.StateMachine):
             rospy.signal_shutdown("No position before station was provided!")
         self.charge_level = charge_level
         self.before_station = before_station
+        self.pose = pose
         # Initialize velocity command
         cmd_vel = Twist()
         cmd_vel.linear.x = -0.05
         cmd_vel.angular.z = 0
 
         with self:
-            smach.StateMachine.add('WAIT_FOR_RECHARGE',
-                                WaitForBatteryLevel(lower=False, threshold= self.charge_level),
-                                transitions={'level_reached': 'MOVE_BACKWARDS',
-                                    'preempted': 'preempted'},
-                                    remapping = {})
+            if self.pose != None:
+                # Set pose with covariance as current state for selected Kalman filters
+                smach.StateMachine.add('WAIT_FOR_RECHARGE',
+                                    WaitForBatteryLevel(lower=False, threshold= self.charge_level),
+                                    transitions={'level_reached': 'SET_POSE_KALMAN',
+                                        'preempted': 'preempted'},
+                                        remapping = {})
+
+                smach.StateMachine.add('SET_POSE_KALMAN',
+                                    ServiceState('/set_pose',
+                                        SetPose,
+                                        request_cb = self.request_pose_cb,
+                                        response_cb = self.response_pose_cb,
+                                        input_keys = []),
+                                        transitions={'succeeded':'MOVE_BACKWARDS'})                                     
+
+            else:
+                smach.StateMachine.add('WAIT_FOR_RECHARGE',
+                                    WaitForBatteryLevel(lower=False, threshold= self.charge_level),
+                                    transitions={'level_reached': 'MOVE_BACKWARDS',
+                                        'preempted': 'preempted'},
+                                        remapping = {})
 
             smach.StateMachine.add('MOVE_BACKWARDS',
                                 PublishVelocity(cmd_vel),
@@ -87,7 +115,7 @@ class Charging(smach.StateMachine):
 
             smach.StateMachine.add('NAVIGATE',
                                 Navigate(charge= False, goal_pose= before_station, planner = 'Charging_station_planner',
-                                controller= 'dwa_station', reconfigure_bigger= True),
+                                controller= 'dwa', reconfigure_bigger= True),
                                 transitions={'succeeded': 'succeeded',
                                     'preempted': 'preempted','aborted': 'aborted'},
                                     remapping = {'recovery_flag': 'sm_recovery_flag'})
@@ -111,5 +139,18 @@ class Charging(smach.StateMachine):
             if response.message == 'preempted':
                 return 'preempted'
             return 'aborted'
+
+    @cb_interface(
+        input_keys=[],
+        output_keys=[])
+    def request_pose_cb(self,userdata, request):
+        pose_request = SetPoseRequest(self.pose)
+        return pose_request
+
+    @cb_interface(
+        output_keys=[],
+        outcomes=['succeeded', 'aborted', 'preempted'])
+    def response_pose_cb(self,userdata, response):
+        return 'succeeded'
 
 

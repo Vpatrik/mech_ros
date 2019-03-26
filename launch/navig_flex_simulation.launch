@@ -1,20 +1,20 @@
 <launch>
 
-<!-- Arguments -->
+  <!-- Arguments -->
   <arg name="model" default="$(find mech_ros)/robot_description/urdf/mechROS.xacro"/>
   <arg name="gui" default="true" />
   <arg name="rvizconfig" default="$(find mech_ros)/rviz/navigation.rviz" />
   <arg name="map_file" default="$(find mech_ros)/map/muzeum_map.yaml"/>
   <arg name="prefix" default="mechROS_"/>
-  
-<!-- Global Parameters -->
+
+  <!-- Global Parameters -->
   <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
   <param name="use_gui" value="$(arg gui)"/>
-  <rosparam file="$(find mech_ros)/control/mechROS_skid_steer_control.yaml" command="load"/> 
+  <rosparam file="$(find mech_ros)/control/mechROS_skid_steer_control.yaml" command="load"/>
 
 
 
-    <!-- IMU Madgwick fusion -->
+  <!-- IMU Madgwick fusion -->
   <node name="imu_filter_node" pkg="imu_filter_madgwick" type="imu_filter_node" output="screen">
     <param name="world_frame" value="enu" />
     <param name="use_magnetic_field_msg" value="false" />
@@ -24,57 +24,56 @@
     <param name="orientation_stddev" value="0.2" />
     <param name="fixed_frame" value="imu_link" />
     <param name="publish_tf" value="false" />
-        <!-- Debug -->
+    <!-- Debug -->
     <!-- <param name="publish_debug_topics" value="true" /> -->
     <!-- <param name="stateless" value="true" /> -->
   </node>
 
-<!-- Correct orientation from Madgwick for declination -->
- <node name="declination_corrector" pkg="mech_ros" type="Declination_correction.py"/>
+  <!-- Correct orientation from Madgwick for declination -->
+  <node name="declination_corrector" pkg="mech_ros" type="Declination_correction.py"/>
 
-<!-- Simulated robot -->
+  <!-- Simulated robot -->
 
-<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-output="screen" ns="/mechROS" args="base_control"> </node>
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/mechROS" args="base_control"></node>
 
 
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-      <param name="use_gui" value="False"/>
-   </node>
+    <param name="use_gui" value="False"/>
+  </node>
 
-   <node pkg="robot_state_publisher" type="robot_state_publisher"  name="robot_state_publisher">
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
     <param name="publish_frequency" type="double" value="30.0" />
   </node>
- 
- <!-- Rviz visualization -->
+
+  <!-- Rviz visualization -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
- 
+
   <!-- Map server -->
   <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
 
-<!-- Detect markers from image -->
- <node name="markers_detector" pkg="mech_ros" type="Aruco_Gazebo_detect.py"/>
+  <!-- Detect markers from image -->
+  <node name="markers_detector" pkg="mech_ros" type="Aruco_Gazebo_detect.py"/>
 
-    <!-- Estimate pose from marker -->
-   <node pkg="mech_ros" type="Estimated_pose_markers.py"  name="marker_pose_estimator">
+  <!-- Estimate pose from marker -->
+  <node pkg="mech_ros" type="Estimated_pose_markers.py" name="marker_pose_estimator">
     <param name="markers_map" value="$(find mech_ros)/map/muzeum_aruco_markers.yaml" />
     <param name="min_covariance" value="0.0001" />
     <param name="marker_detector_topic" value="/markers" />
     <param name="estimated_pose_topic" value="/estimated_pose_markers" />
   </node>
 
- <!-- Extended Kalman - relatve -->
+  <!-- Extended Kalman - relatve -->
   <include file="$(find mech_ros)/launch/ext_kalman_relative.launch"/>
 
-   <!-- Extended Kalman - absolute -->
+  <!-- Extended Kalman - absolute -->
   <include file="$(find mech_ros)/launch/ext_kalman_absolute.launch"/>
 
-     <!-- Navigation -->
+  <!-- Navigation -->
   <include file="$(find mech_ros)/launch/move_base_flex_simul.launch"/>
 
-   <!-- Charging SMACH -->
-<node pkg="mech_ros" type="complete_SMACH.py" name="mbf_move_base_action" output="screen">
+  <!-- Charging SMACH -->
+  <node pkg="mech_ros" type="complete_SMACH.py" name="mbf_move_base_action" output="screen">
     <param name="lower_battery_threshold" value="3.5" />
     <param name="higher_battery_threshold" value="4.5" />
     <param name="timed_out" value="80" />
@@ -83,12 +82,14 @@ output="screen" ns="/mechROS" args="base_control"> </node>
     <param name="simulation" value="True" />
     <rosparam param="pose_before_station">[ -5.3,  -3.5,  0.0,
                                             0.0,  0.0,  0.707106781, 0.707106781 ]</rosparam>
-    <rosparam param="pose_plug">[ -5.3,  -4.5,  0.0,
+    <rosparam param="pose_plug_navig">[ -5.3,  -4.5,  0.0,
                                   0.0,  0.0,  0.707106781, 0.707106781 ]</rosparam>
-</node>
+    <rosparam param="pose_plug">[ -5.3,  -4.4,  0.0,
+                                  0.0,  0.0,  0.707106781, 0.707106781 ]</rosparam>
+  </node>
 
-   <!-- Charging station -->
-<node pkg="mech_ros" type="Charging_station.py" name="charging_station" output="screen"/>
+  <!-- Charging station -->
+  <node pkg="mech_ros" type="Charging_station.py" name="charging_station" output="screen"/>
 
-  
+
 </launch>

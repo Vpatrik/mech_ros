@@ -1,6 +1,6 @@
 <launch>
 
-<!-- Arguments -->
+  <!-- Arguments -->
   <arg name="model" default="$(find mech_ros)/robot_description/urdf/mechROS.xacro"/>
   <arg name="gui" default="true" />
   <arg name="rvizconfig" default="$(find mech_ros)/rviz/navigation_real.rviz" />
@@ -13,19 +13,19 @@
   <arg name="odom_topic" default="/odometry_rel/filtered" />
   <arg name="marker_detector_topic" default="/markers" />
   <arg name="estimated_pose_topic" value="/estimated_pose_markers" />
-  
-<!-- Global Parameters -->
+
+  <!-- Global Parameters -->
   <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
   <param name="use_gui" value="$(arg gui)"/>
 
-<!-- IMU -->
+  <!-- IMU -->
   <node pkg="mech_ros" type="IMU_from_raw.py" name="converter" output="screen">
-      <param name="calibrate_imu" value="True" />
-      <param name="samples_number" value="1000" />
-      <param name="calibration_file" value="$(find mech_ros)/localization/IMU_calibration.yaml" />
+    <param name="calibrate_imu" value="True" />
+    <param name="samples_number" value="1000" />
+    <param name="calibration_file" value="$(find mech_ros)/localization/IMU_calibration.yaml" />
   </node>
 
-    <!-- IMU Madgwick fusion -->
+  <!-- IMU Madgwick fusion -->
   <node name="imu_filter_node" pkg="imu_filter_madgwick" type="imu_filter_node" output="screen">
     <param name="world_frame" value="enu" />
     <param name="use_magnetic_field_msg" value="false" />
@@ -35,35 +35,35 @@
     <param name="orientation_stddev" value="0.7" />
     <param name="fixed_frame" value="imu_link" />
     <param name="publish_tf" value="false" />
-        <!-- Debug -->
+    <!-- Debug -->
     <!-- <param name="publish_debug_topics" value="true" /> -->
     <!-- <param name="stateless" value="true" /> -->
   </node>
 
-<!-- Correct orientation from Madgwick for declination -->
- <!-- <node name="declination_corrector" pkg="mech_ros" type="Declination_correction.py"/> -->
+  <!-- Correct orientation from Madgwick for declination -->
+  <!-- <node name="declination_corrector" pkg="mech_ros" type="Declination_correction.py"/> -->
 
-<!-- Simulated robot -->
+  <!-- Simulated robot -->
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-      <param name="use_gui" value="False"/>
-   </node>
+    <param name="use_gui" value="False"/>
+  </node>
 
-   <node pkg="robot_state_publisher" type="robot_state_publisher"  name="robot_state_publisher">
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
     <param name="publish_frequency" type="double" value="30.0" />
   </node>
- 
- <!-- Rviz visualization -->
+
+  <!-- Rviz visualization -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
- 
+
   <!-- Map server -->
   <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
 
-<!-- Detect markers from image -->
- <!-- <node name="markers_detector" pkg="mech_ros" type="Aruco_detect.py"/> -->
+  <!-- Detect markers from image -->
+  <!-- <node name="markers_detector" pkg="mech_ros" type="Aruco_detect.py"/> -->
 
-    <!-- Estimate pose from marker -->
-   <node pkg="mech_ros" type="Estimated_pose_markers.py"  name="marker_pose_estimator">
+  <!-- Estimate pose from marker -->
+  <node pkg="mech_ros" type="Estimated_pose_markers.py" name="marker_pose_estimator">
     <param name="markers_map" value="$(arg marker_map_file)" />
     <param name="min_covariance" value="0.0001" />
     <param name="min_surface" value="1800" />
@@ -72,14 +72,14 @@
     <param name="estimated_pose_topic" value="$(arg estimated_pose_topic)" />
   </node>
 
- <!-- Extended Kalman - relatve -->
+  <!-- Extended Kalman - relatve -->
   <include file="$(find mech_ros)/launch/ext_kalman_relative_real.launch"/>
 
-   <!-- Extended Kalman - absolute -->
+  <!-- Extended Kalman - absolute -->
   <include file="$(find mech_ros)/launch/ext_kalman_absolute_real.launch"/>
 
   <!-- Move base flex - navigation -->
-  <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" respawn="false" name="move_base_flex"  output="screen">
+  <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" respawn="false" name="move_base_flex" output="screen">
 
     <rosparam file="$(find mech_ros)/navigation/MBFlex/costmap_common_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find mech_ros)/navigation/MBFlex/costmap_common_params.yaml" command="load" ns="local_costmap" />
@@ -95,47 +95,47 @@
 
   </node>
 
-   <!-- Charging SMACH -->
-<node pkg="mech_ros" type="complete_SMACH.py" name="mbf_move_base_action" output="screen">
+  <!-- Charging SMACH -->
+  <node pkg="mech_ros" type="complete_SMACH.py" name="mbf_move_base_action" output="screen">
     <param name="lower_battery_threshold" value="3.5" />
-    <param name="higher_battery_threshold" value="4.5" />
+    <param name="higher_battery_threshold" value="4.2" />
     <param name="timed_out" value="120" />
     <param name="repetitions" value="2" />
     <param name="world_frame" value="map" />
     <param name="simulation" value="False" />
-    <rosparam param="pose_before_station">[ 2.2,  0.085,  0.0,
+    <rosparam param="pose_before_station">[ 2.2,  -0.27,  0.0,
                                             0.0,  0.0,  0.707106781, 0.707106781 ]</rosparam>
-    <rosparam param="pose_plug">[ 2.17,  -1.45,  0.0,
+    <rosparam param="pose_plug_navig">[ 2.17,  -1.48,  0.0,
                                   0.0,  0.0,  0.707106781, 0.707106781 ]</rosparam>
-</node>
+    <rosparam param="pose_plug">[ 2.17,  -1.40,  0.0,
+                                  0.0,  0.0,  0.707106781, 0.707106781 ]</rosparam>
+  </node>
 
- 
- <!-- Kinematics -->
+
+  <!-- Kinematics -->
   <node pkg="mech_ros" type="Kinematics.py" name="kinematics"/>
 
-<!-- Rosbag recording -->
-    <node pkg="rosbag" type="record" name="rosbag_record"
-        args=" record -o $(find mech_ros)/bag_files/Navig/ -a"/>
+  <!-- Rosbag recording -->
+  <node pkg="rosbag" type="record" name="rosbag_record" args=" record -o $(find mech_ros)/bag_files/Navig/ -a"/>
 
 
- <!-- joy node -->
-  <node respawn="true" pkg="joy"
-        type="joy_node" name="twist_joy" >
+  <!-- joy node -->
+  <node respawn="true" pkg="joy" type="joy_node" name="twist_joy">
     <param name="dev" type="string" value="/dev/input/js0" />
     <param name="deadzone" value="0.01" />
     <!-- <param name="autorepeat_rate" value="30" /> -->
   </node>
 
- <!-- Axes -->
+  <!-- Axes -->
   <node pkg="mech_ros" type="Teleop.py" name="teleop"/>
 
   <!-- Twist mux -->
-<node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
-  <rosparam file="$(arg twist_mux_config)" command="load"/>
-  <remap from="/cmd_vel_out" to="$(arg twist_mux_cmd_vel_topic)"/>
+  <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
+    <rosparam file="$(arg twist_mux_config)" command="load"/>
+    <remap from="/cmd_vel_out" to="$(arg twist_mux_cmd_vel_topic)"/>
 
-</node>
+  </node>
 
 
-  
+
 </launch>

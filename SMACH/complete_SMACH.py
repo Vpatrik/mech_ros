@@ -25,20 +25,29 @@ from send_velocity_command import PublishVelocity
 import tf2_ros
 import tf2_geometry_msgs
 from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from geometry_msgs.msg import Twist
 
 def main():
     rospy.init_node('mbf_state_machine')
     before_station = PoseStamped()
-    plug = PoseStamped()
+    plug = PoseWithCovarianceStamped()
+    plug_navig = PoseStamped()
 
 
     # ROS adjustable parameters
     timed_out = rospy.get_param("~timed_out", 100)
     lower_battery_threshold = rospy.get_param("~lower_battery_threshold", 3.5)
     higher_battery_threshold = rospy.get_param("~higher_battery_threshold", 4.5)
-    before_station_list = rospy.get_param("~pose_before_station", [-5.3,-3.5,0,0,0.707106781,0.707106781])
-    plug_list = rospy.get_param("~pose_plug", [-5.3,-4.5,0,0,0.707106781,0.707106781])
+    before_station_list = rospy.get_param("~pose_before_station", [-5.3,-3.5,0,0,0,0.707106781,0.707106781])
+    plug_navig_list = rospy.get_param("~pose_plug_navig", [-5.3,-4.5,0,0,0,0.707106781,0.707106781])
+    plug_list = rospy.get_param("~pose_plug", [-5.3,-4.5,0,0,0,0.707106781,0.707106781])
+    plug_covariance= rospy.get_param("~pose_plug_covariance",   [0.01, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                                                0.0, 0.01, 0.0, 0.0, 0.0, 0.0,
+                                                                0.0, 0.0, 0.01, 0.0, 0.0, 0.0,
+                                                                0.0, 0.0, 0.0, 0.01, 0.0, 0.0,
+                                                                0.0, 0.0, 0.0, 0.0, 0.01, 0.0,
+                                                                0.0, 0.0, 0.0, 0.0, 0.0, 0.01])
     world_frame = rospy.get_param("~world_frame", 'map')
     simulation = rospy.get_param("~simulation", 'False')
     repetitions = rospy.get_param("~repetitions", 2)
@@ -48,10 +57,16 @@ def main():
     before_station.pose.position.x,before_station.pose.position.y,before_station.pose.position.z = before_station_list[0:3]
     before_station.pose.orientation.x,before_station.pose.orientation.y,before_station.pose.orientation.z,before_station.pose.orientation.w = before_station_list[3:7]
     
+    plug_navig.header.frame_id = world_frame
+    plug_navig.pose.position.x,plug_navig.pose.position.y,plug_navig.pose.position.z = plug_navig_list[0:3]
+    plug_navig.pose.orientation.x,plug_navig.pose.orientation.y,plug_navig.pose.orientation.z,plug_navig.pose.orientation.w = plug_navig_list[3:7]
+
     plug.header.frame_id = world_frame
-    plug.pose.position.x,plug.pose.position.y,plug.pose.position.z = plug_list[0:3]
-    plug.pose.orientation.x,plug.pose.orientation.y,plug.pose.orientation.z,plug.pose.orientation.w = plug_list[3:7]
-    
+    plug.pose.pose.position.x,plug.pose.pose.position.y,plug.pose.pose.position.z = plug_list[0:3]
+    plug.pose.pose.orientation.x,plug.pose.pose.orientation.y,plug.pose.pose.orientation.z,plug.pose.pose.orientation.w = plug_list[3:7]
+    # Fill covariance data for plug for setting pose to Kalman filters
+    plug.pose.covariance = plug_covariance
+
     # initialize SMACH wth userdara
     mbf_sm = smach.StateMachine(outcomes=['preempted', 'succeeded', 'aborted'])
     mbf_sm.userdata.sm_recovery_flag = False
@@ -238,7 +253,7 @@ def main():
                     plug.header.stamp = rospy.Time.now()
 
                     smach.Concurrence.add('NAVIGATE_2_PLUG',
-                                        Navigate(charge= True, goal_pose= plug, planner= 'Charging_station_planner',
+                                        Navigate(charge= True, goal_pose= plug_navig, planner= 'Charging_station_planner',
                                         controller= 'dwa_station', reconfigure_smaller= True),
                                         remapping={'recovery_flag': 'sm_recovery_flag'})
                    
@@ -287,7 +302,7 @@ def main():
             # included timing out #######################              
 
         smach.StateMachine.add('CHARGING',
-                               Charging(charge_level= higher_battery_threshold, before_station = before_station),
+                               Charging(charge_level= higher_battery_threshold, before_station = before_station, pose= plug),
                                transitions={'succeeded': 'NAVIGATION_LOOP',
                                 'preempted': 'preempted','aborted': 'aborted'},
                                 remapping = {'sm_recovery_flag' : 'sm_recovery_flag'})

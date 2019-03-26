@@ -143,7 +143,7 @@ class Navigate(smach.StateMachine):
             if self.charge == False:
                 goal.tolerance = 0.08
             else:
-                goal.tolerance = 0.2
+                goal.tolerance = 0.28
         
 
         target_pose.header.stamp = rospy.Time.now()
