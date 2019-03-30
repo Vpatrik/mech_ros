@@ -2,19 +2,17 @@
 
 # Patrik Vavra 2019
 
+from math import atan2, cos, pi, sin
 import rospy
-import yaml
 import tf2_ros
-
-from geometry_msgs.msg import Quaternion, Transform, TransformStamped
+import yaml
+from geometry_msgs.msg import (PoseWithCovarianceStamped, Quaternion,
+                               Transform, TransformStamped)
+from mech_ros_msgs.msg import Marker, MarkerList
+from numpy import dot, linalg, sum, where, zeros
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
-from geometry_msgs.msg import PoseWithCovarianceStamped
-from math import pi, cos, sin, atan2
-from numpy import zeros, dot, linalg, where, sum
-from scipy import linalg as lin
-from mech_ros_msgs.msg import MarkerList
-from mech_ros_msgs.msg import Marker
 
+from scipy import linalg as lin
 
 
 class PoseEstimator():
@@ -377,4 +375,3 @@ if __name__ == '__main__':
         rospy.spin()
     except rospy.ROSInterruptException:
         pass
-    

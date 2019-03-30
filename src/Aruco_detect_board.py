@@ -15,8 +15,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from mech_ros_msgs.msg import MarkerList
 from mech_ros_msgs.msg import Marker
 
-filename = "/home/patrik/catkin_ws/src/mech_ros/src/Data_bocni_posuv.csv"
-filename_cov = "/home/patrik/catkin_ws/src/mech_ros/src/Covariances.csv"
+filename = "/home/patrik/catkin_ws/src/mech_ros/localization/Data_natoceni.csv"
 
 
 # Static transformation from board to marker

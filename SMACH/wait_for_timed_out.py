@@ -27,7 +27,7 @@ class TimedOut(smach.State):
         rospy.loginfo("Wait for complete navigation to charging station for %d seconds before timing out." % self.time)
         rospy.loginfo("Attempt to navigate for charging # %d." % userdata.number_in)
         sleeping_step_size = 1 # [s]
-        waiting_time = self.time
+        waiting_time = self.time/(userdata.number_in + 1)
 
         while waiting_time > 0:
             waiting_time -= sleeping_step_size

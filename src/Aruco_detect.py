@@ -21,7 +21,7 @@ frame_id = "front_camera_link"
 
 # Define calibration filename
 calibration_file = "/home/patrik/catkin_ws/src/mech_ros/Config_ARuco/camera.yaml"
-# calibration_file = "/home/patrik/catkin_ws/src/mech_ros/map/camCal2.npz"
+# calibration_file = "/home/patrik/catkin_ws/src/mech_ros/Config_ARuco/camCal2.npz"
 
 
 
@@ -93,14 +93,13 @@ def load_coefficient(calibration_file):
     #     c_matrix, dist_coeff, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
     # return c_matrix, dist_coeff
 
-_FLOAT_EPS_4 = np.finfo(float).eps * 4.0
 
 def rotationMatrixToEulerAngles(M, cy_thresh=None):
     # cy_thresh : None or scalar, optional
     #    threshold below which to give up on straightforward arctan for
     #    estimating x rotation.  If None (default), estimate from
     #    precision of input. Source : http://www.graphicsgems.org/
-
+    _FLOAT_EPS_4 = np.finfo(float).eps * 4.0
     if cy_thresh is None:
         try:
             cy_thresh = np.finfo(M.dtype).eps * 4
@@ -175,6 +174,10 @@ def draw(img, corners, imgpts):
 def aruco_detect(camera_matrix, dist_coeff):
     cap = cv2.VideoCapture('tcpclientsrc host=mechros2.local port=8080  ! gdpdepay !  rtph264depay ! avdec_h264 ! videoconvert ! appsink sync=false', cv2.CAP_GSTREAMER)
     # cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FOCUS,0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH,1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT,720)
+    # cap.set(cv2.CAP_PROP_FPS,20)
     # pipe = "tcpclientsrc host=10.42.0.136 port=8080 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! appsink sync=false"
     # pipe = 'tcp://10.42.0.85:5001'
     # cap = cv2.VideoCapture(pipe)    

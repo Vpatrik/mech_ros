@@ -39,7 +39,6 @@ else:
 from navigate import Navigate
 from monitor_battery import WaitForBatteryLevel
 from send_velocity_command import PublishVelocity
-from set_pose import SetPoseKalman
 
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Twist
@@ -151,6 +150,9 @@ class Charging(smach.StateMachine):
         output_keys=[],
         outcomes=['succeeded', 'aborted', 'preempted'])
     def response_pose_cb(self,userdata, response):
+        rospy.sleep(1)
+        rospy.loginfo('Set pose to (%s, %s)', self.pose.pose.position.x, self.pose.pose.position.y)
+        rospy.loginfo('Set orientation to (%s, %s)', self.pose.pose.orientation.z, self.pose.pose.orientation.w)
         return 'succeeded'
 
 
