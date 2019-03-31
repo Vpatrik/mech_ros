@@ -2,6 +2,8 @@
  <launch>
   <!-- Extended Kalman filter fusion - odometry -->
     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_rel" clear_params="true" >
+        <remap from="/set_pose" to="/set_pose_rel"/>
+        
         <param name="frequency" value="60"/>
         <param name="sensor_timeout" value="0.034"/>
         <param name="two_d_mode" value="true"/>

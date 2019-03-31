@@ -58,15 +58,20 @@ Hosted on another [repo](https://github.com/adyczech/AR_GUI "AR_GUI").
 
 ### State machine:
 
-<em>Complete SMACH</em>:
+<em>Complete SMACH</em>:  
+
+
 <img src="/SMACH/SM.svg" width="700">
 
-<em>Navigation loop</em>:
+<em>Navigation loop</em>:  
+
 <img src="/SMACH/SM_navigation_loop.svg" width="400">
 
-<em>Navigation to charging plug</em>:
+<em>Navigation to charging plug</em>:  
+
 <img src="/SMACH/SM_navigate_2_charge.svg" width="600">
 
-<em>Charging</em>:
+<em>Charging</em>:  
+
 <img src="/SMACH/SM_charging.svg" height="400">
 

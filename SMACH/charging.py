@@ -40,9 +40,8 @@ from navigate import Navigate
 from monitor_battery import WaitForBatteryLevel
 from send_velocity_command import PublishVelocity
 
-from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Bool
+from geometry_msgs.msg import PoseWithCovarianceStamped
 
 from smach_ros import ServiceState
 from std_srvs.srv import Trigger
@@ -64,6 +63,7 @@ class Charging(smach.StateMachine):
         self.charge_level = charge_level
         self.before_station = before_station
         self.pose = pose
+
         # Initialize velocity command
         cmd_vel = Twist()
         cmd_vel.linear.x = -0.05
@@ -143,16 +143,17 @@ class Charging(smach.StateMachine):
         input_keys=[],
         output_keys=[])
     def request_pose_cb(self,userdata, request):
-        pose_request = SetPoseRequest(self.pose)
+        pose_request = SetPoseRequest()
+        pose_request.pose = self.pose
+        rospy.loginfo('Setting pose to (%s, %s)', pose_request.pose.pose.pose.position.x, pose_request.pose.pose.pose.position.x)
+        rospy.loginfo('Setting orientation to (%s, %s)', pose_request.pose.pose.pose.orientation.z, pose_request.pose.pose.pose.orientation.w)
         return pose_request
 
     @cb_interface(
         output_keys=[],
         outcomes=['succeeded', 'aborted', 'preempted'])
     def response_pose_cb(self,userdata, response):
-        rospy.sleep(1)
-        rospy.loginfo('Set pose to (%s, %s)', self.pose.pose.position.x, self.pose.pose.position.y)
-        rospy.loginfo('Set orientation to (%s, %s)', self.pose.pose.orientation.z, self.pose.pose.orientation.w)
+        rospy.sleep(0.5)
         return 'succeeded'
 
 
