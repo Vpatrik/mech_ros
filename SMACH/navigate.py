@@ -52,12 +52,13 @@ from mbf_msgs.msg import RecoveryAction
 from mbf_msgs.msg import RecoveryResult
 
 from wait_for_goal import WaitForGoal
+from send_velocity_command import PublishVelocity
 from geometry_msgs.msg import PoseStamped
-
+from geometry_msgs.msg import Twist
 
 class Navigate(smach.StateMachine):
     def __init__(self, charge = False, goal_pose = None, planner = 'Normal_planner', controller = 'dwa',
-        reconfigure_smaller = None, reconfigure_bigger = None):
+        reconfigure_smaller = None, reconfigure_bigger = None, cmd_vel = None):
         smach.StateMachine.__init__(self,
             outcomes=['succeeded', 'preempted','aborted'],
             input_keys=['received_goal','recovery_flag'] if goal_pose is None else ['recovery_flag'])
@@ -68,6 +69,12 @@ class Navigate(smach.StateMachine):
         self.controller = controller
         self.reconfigure_smaller = reconfigure_smaller
         self.reconfigure_bigger = reconfigure_bigger
+        if cmd_vel == None:
+            self.cmd_vel = Twist()
+            self.cmd_vel.linear.x = 0
+            self.cmd_vel.angular.z = 0
+        else:
+            self.cmd_vel = cmd_vel
     
         with self:            
             smach.StateMachine.add('GET_PATH',
@@ -84,9 +91,15 @@ class Navigate(smach.StateMachine):
                                                             ExePathAction,
                                                             goal_cb = self.ex_path_goal_cb,
                                                             result_cb = self.ex_path_result_cb),
-                                transitions={'success': 'succeeded',
+                                transitions={'success': 'ZERO_VELOCITY',
                                                 'aborted': 'RECOVERY',
                                                 'preempted': 'preempted'})
+
+            smach.StateMachine.add('ZERO_VELOCITY',
+                                PublishVelocity(self.cmd_vel),
+                                transitions={'velocity_published': 'succeeded',
+                                    'preempted': 'preempted'},
+                                    remapping = {})            
 
             smach.StateMachine.add('RECOVERY',
                                 smach_ros.SimpleActionState('move_base_flex/recovery',
