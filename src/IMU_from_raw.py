@@ -5,6 +5,14 @@ import sys
 
 
 from mech_ros_msgs.msg import RawImu
+from mech_ros_msgs.srv import Start_recalibration
+from mech_ros_msgs.srv import Start_recalibrationRequest
+from mech_ros_msgs.srv import Start_recalibrationResponse
+
+from mech_ros_msgs.srv import End_recalibration
+from mech_ros_msgs.srv import End_recalibrationRequest
+from mech_ros_msgs.srv import End_recalibrationResponse
+
 from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Vector3Stamped
 from math import pi
@@ -12,8 +20,11 @@ import yaml
 
 from numpy import linalg, array, sin, cos, multiply, dot, zeros, mean
 
-# Node which receive raw data from rosserial_python node from arduino, transform data in
+# Node which receives raw data from rosserial_python node from arduino, transform data in
 # physical meaning and fill type of messages to use default Madgwick node
+# Calibration on Start
+# Recalibration as Service - /start_recalibraion, /stop_recalibration
+# TODO - implement velocity lock when calibrating imu
 
 class ImuMagConverter:
     def __init__(self):
@@ -30,6 +41,7 @@ class ImuMagConverter:
         self.mag_bias = zeros([1,3])
         self.mag_matrix = zeros([3,3])
         self.calibration_number = 0
+        self.recalibrate_imu = False
 
         # IMU and Mag parameters
         self.a_gain = 0.061/1000
@@ -58,10 +70,12 @@ class ImuMagConverter:
         self.Mag = Vector3Stamped()
         self.Mag.header.frame_id = mag_frame_id
 
-        # ROS Subscribers and publishers
+        # ROS Subscribers, publishers and services
         rospy.Subscriber(raw_imu_mag_topic,RawImu, self.raw_imu_mag_cb)
         self.imu_publisher = rospy.Publisher(imu_topic, Imu, queue_size=10)
         self.mag_publisher = rospy.Publisher(mag_topic, Vector3Stamped, queue_size=10)
+        rospy.Service('start_recalibration',Start_recalibration, self.start_imu_recalibration)
+        rospy.Service('stop_recalibration',End_recalibration, self.stop_imu_recalibration)
 
         # Load calibration data
         self.load_calibration()
@@ -120,17 +134,12 @@ class ImuMagConverter:
 
             self.calibration_number +=1
 
-            if self.calibration_number >= self.samples_number:
+            if (self.calibration_number >= self.samples_number) and not(self.recalibrate_imu):
                 self.calibrate_imu = False
-                self.acc_bias = self.acc_samples*self.a_gain*self.gravity/self.calibration_number
-                self.acc_bias[2] -= 9.81
-                self.gyr_bias = self.gyr_samples*self.g_gain/self.calibration_number
+                self.recalibrate()
 
-                # Publish info about calibration in ROS 
-                rospy.loginfo('IMU calibrated from %d samples'%(self.calibration_number))
-                rospy.loginfo("Accelerometer bias :\n %s",self.acc_bias)
-                rospy.loginfo("Gyroscope bias :\n %s",self.gyr_bias)
-            return
+            if not(self.recalibrate_imu):
+                return
 
         ## Multiply each sensor analog value by gain and correct from calibration data
         # Accelerometer
@@ -160,6 +169,54 @@ class ImuMagConverter:
         ## Publish topics
         self.imu_publisher.publish(self.Imu)
         self.mag_publisher.publish(self.Mag)
+
+    def start_imu_recalibration(self,req):
+        # TODO - implement some logic to reject recalibration if not convinient
+
+        # Initialize
+        self.acc_samples = array([0,0,0])
+        self.gyr_samples = array([0,0,0])
+        self.calibration_number = 0
+        self.calibrate_imu = True
+        self.recalibrate_imu = True
+
+        response = Start_recalibrationResponse()
+        response.accepted = True
+
+        rospy.loginfo('Started collecting imu readings for recalibration')
+        # TODO - Implement only partial recalibration
+        self.recalibrate_gyr = req.calibrate_gyr
+        self.recalibrate_gyr = req.calibrate_acc
+
+        return response
+    
+    def stop_imu_recalibration(self,req):
+        rospy.loginfo('Stopped collecting imu readings')
+        self.calibrate_imu = False
+        self.recalibrate_imu = False
+        self.recalibrate()
+
+        response = End_recalibrationResponse()
+        response.imu_samples = self.calibration_number
+
+        response.acc_bias.x = self.acc_bias[0]
+        response.acc_bias.y = self.acc_bias[1]
+        response.acc_bias.z = self.acc_bias[2]
+
+        response.gyr_bias.x = self.gyr_bias[0]
+        response.gyr_bias.y = self.gyr_bias[1]
+        response.gyr_bias.z = self.gyr_bias[2]
+        return response
+
+    def recalibrate(self):
+        self.acc_bias = self.acc_samples*self.a_gain*self.gravity/self.calibration_number
+        self.acc_bias[2] -= 9.81
+        self.gyr_bias = self.gyr_samples*self.g_gain/self.calibration_number
+
+        # Publish info about calibration in ROS 
+        rospy.loginfo('IMU calibrated from %d samples'%(self.calibration_number))
+        rospy.loginfo("Accelerometer bias :\n %s",self.acc_bias)
+        rospy.loginfo("Gyroscope bias :\n %s",self.gyr_bias)
 
 
 if __name__ == '__main__':
