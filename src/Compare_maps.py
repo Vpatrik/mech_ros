@@ -6,14 +6,15 @@ import cv2
 import rospy
 import math
 
+import time
 
 
-
-def rotate_image(image, angle):
+def rotate_image(image, angle, create_rot_image= True, rot_image= None):
     diagonal = int(math.sqrt(image.shape[0]**2 + image.shape[1]**2))
     offset_y = (diagonal - image.shape[0])/2
     offset_x = (diagonal - image.shape[1])/2
-    rot_image = np.zeros((diagonal, diagonal), dtype='uint8')
+    if create_rot_image:
+        rot_image = np.zeros((diagonal, diagonal), dtype='uint8')
     image_center = (diagonal/2, diagonal/2)
 
     R = cv2.getRotationMatrix2D(image_center, angle, 1.0)
@@ -82,44 +83,16 @@ def blendAndDrawDifference(img1, img2, alpha):
 
     return combined, combined2
 
-def combine_two_color_images_with_anchor(image1, image2, anchor_y, anchor_x):
-    foreground, background = image1.copy(), image2.copy()
-    # Check if the foreground is inbound with the new coordinates and raise an error if out of bounds
-    background_height = background.shape[0]
-    background_width = background.shape[1]
-    foreground_height = foreground.shape[0]
-    foreground_width = foreground.shape[1]
-    if foreground_height+anchor_y > background_height or foreground_width+anchor_x > background_width:
-        raise ValueError("The foreground image exceeds the background boundaries at this location")
+sign = lambda x: -1 if x < 0 else (1 if x > 0 else 0)
 
-    alpha =0.5
-
-    # do composite at specified location
-    start_y = anchor_y
-    start_x = anchor_x
-    end_y = anchor_y+foreground_height
-    end_x = anchor_x+foreground_width
-    blended_portion = cv2.addWeighted(foreground,
-                alpha,
-                background[start_y:end_y, start_x:end_x],
-                1 - alpha,
-                0,
-                background)
-    background[start_y:end_y, start_x:end_x] = blended_portion
-    cv2.imshow('composited image', background)
-
-    if cv2.waitKey(0) & 0xFF == ord('q'):
-        cv2.destroyAllWindows()
+t = time.time()
 
 filename_1 = '/home/patrik/catkin_ws/src/mech_ros/map/map_comparsion/MechLAB_ground_truth.pgm'
-# filename_2 = '/home/patrik/catkin_ws/src/mech_ros/map/map_comparsion/MechLAB_1_transformed.pgm'
-filename_2 = '/home/patrik/catkin_ws/src/mech_ros/map/map_comparsion/MechLab_2.pgm'
+filename_2 = '/home/patrik/catkin_ws/src/mech_ros/map/map_comparsion/MechLAB_1_transformed.pgm'
+# filename_2 = '/home/patrik/catkin_ws/src/mech_ros/map/map_comparsion/MechLab_2.pgm'
 
 ground_truth = cv2.imread(filename_1,cv2.IMREAD_UNCHANGED)
 created_map = cv2.imread(filename_2,cv2.IMREAD_UNCHANGED)
-
-
-
 
 binary_map = mapToBinary(created_map)
 binary_ground_truth = mapToBinary(ground_truth)
@@ -131,100 +104,65 @@ cropped_map = bbox2(binary_map)
 diagonal = int(math.sqrt(template.shape[0]**2 + template.shape[1]**2))
 after_rotation = np.zeros((diagonal, diagonal), np.uint8)
 padded_cropped_map = addPadding(cropped_map, after_rotation, centered=True)
-rotated_template = rotate_image(template, 0)
 
-# combine_two_color_images_with_anchor(rotated_template, binary_map,80,100)
-
-img_display = padded_cropped_map.copy()
-# img_display = binary_map.copy()
-
-
-# # result = cv2.matchTemplate(padded_cropped_map, rotated_template, cv2.TM_SQDIFF)
-# result = cv2.matchTemplate(binary_map, rotated_template, cv2.TM_SQDIFF)
-# cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
-# _minVal, _maxVal, minLoc, maxLoc = cv2.minMaxLoc(result, None)
-# matchLoc = minLoc
-# cv2.rectangle(img_display, matchLoc, (matchLoc[0] + rotated_template.shape[0], matchLoc[1] + rotated_template.shape[1]), 100, 2, 8, 0 )
-# cv2.rectangle(result, matchLoc, (matchLoc[0] + rotated_template.shape[0], matchLoc[1] + rotated_template.shape[1]), 100, 2, 8, 0 )
-
-# image_window = "Source Image"
-# result_window = "Result window"
-# cv2.imshow(image_window, img_display)
-# cv2.imshow(result_window, result)
 
 best_value = 1e10
+second_best = 1e10
+division = 4
+precision = 0.1
+second_angle = 0
+best_angle = 0
+best_angle_refined = None
 
-for i in range(360):
-    rotated_template = rotate_image(template, i)
+
+for i in range(360/division):
+    rotated_template = rotate_image(template, i*division,create_rot_image= False, rot_image= after_rotation)
     result = cv2.matchTemplate(padded_cropped_map, rotated_template, cv2.TM_SQDIFF)
-    # result = cv2.matchTemplate(binary_map, rotated_template, cv2.TM_SQDIFF)
-    # cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
-    _minVal, _maxVal, minLoc, maxLoc = cv2.minMaxLoc(result, None)
-    # print(i,_minVal)
-    if _minVal < best_value:
-        best_value = _minVal
-        best_coord = minLoc
-        best_angle = i
+    min_val, _, min_loc, _ = cv2.minMaxLoc(result, None)
+    if min_val < best_value:
+        second_best_value = best_value
+        best_value = min_val
+        second_best_angle = best_angle
+        best_angle = i*division
+        best_coord = min_loc
 
-rotated_template = rotate_image(template, best_angle)
-coord = (best_coord[0] + rotated_template.shape[0], best_coord[1] + rotated_template.shape[1])
-cv2.rectangle(img_display, best_coord, coord, 100, 2, 8, 0 )
-coord_center = (best_coord[0] + rotated_template.shape[0]/2, best_coord[1] + rotated_template.shape[1]/2)
 print(best_angle)
-print(coord_center)
+print(second_best_angle)
+sign = lambda x: -1 if x < 0 else (1 if x > 0 else 0)       
 
-rotated_template = rotate_image(template, best_angle)
+signum = sign(second_angle-best_angle)
+
+for i in range(int(division/precision)):
+    rotated_template = rotate_image(template, best_angle + signum*i*precision,create_rot_image= False, rot_image= after_rotation)
+    result = cv2.matchTemplate(padded_cropped_map, rotated_template, cv2.TM_SQDIFF)
+    min_val, _, min_loc, _ = cv2.minMaxLoc(result, None)
+    if min_val < best_value:
+        print(i)
+        best_value = min_val
+        best_coord = min_loc
+        best_angle_refined = best_angle + signum*i*precision
+
+if isinstance(best_angle_refined, type(None)):
+    best_angle_refined = best_angle
+
+print(best_angle_refined)
+
+
+
+rotated_template = rotate_image(template, best_angle_refined)
 
 rotated_template_padded = addPadding(rotated_template, padded_cropped_map, centered= False, origin= best_coord)
 blended_img, blended_img2 = blendAndDrawDifference(rotated_template_padded, padded_cropped_map,0.5)
-
-# combine_two_color_images_with_anchor(rotated_template, binary_map ,best_coord[1],best_coord[0])
-# combine_two_color_images_with_anchor(rotated_template, padded_cropped_map ,best_coord[1],best_coord[0])
-
-# image_window = "Source Image"
-# cv2.imshow(image_window, img_display)
-
-
-# ground_truth_binary = ~cv2.inRange(ground_truth, 180, 230)
-# indices = np.argwhere(background_subtract)
-# (ystart, xstart), (ystop, xstop) = indices.min(0), indices.max(0) + 1 
-# template = background_subtract[ystart:ystop, xstart:xstop]
-
-# affine_transform,_ = cv2.estimateAffine2D(ground_truth, transformed,)
-# rigid_transform = cv2.estimateRigidTransform(ground_truth, transformed,False)
-
-# print(affine_transform)
-# print(rigid_transform)
-
-# ground_truth_contours, contours, hierarchy = cv2.findContours(ground_truth_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-# cv2.drawContours(ground_truth_contours, contours, -1, (100), 2)
-# M = cv2.moments(contours[0])
-# x = M['m10']/M['m00']
-# y = M['m01']/M['m00']
-
-# print(x,y)
-
-
-rotated_template = rotate_image(template, 40)
-cv2.namedWindow('rotated_template',cv2.WINDOW_NORMAL)
-cv2.resizeWindow('transformed', 500,500)
-cv2.imshow('rotated_template',blended_img)
-
-cv2.namedWindow('cropped_map',cv2.WINDOW_NORMAL)
-cv2.resizeWindow('transformed', 500,500)
-cv2.imshow('cropped_map',padded_cropped_map)
+font = cv2.FONT_HERSHEY_COMPLEX
+cv2.putText(blended_img2,'95% of pixels is correct. Good job!',(20,30), font, 0.8,(100,255,180),1,cv2.LINE_AA)
 
 cv2.namedWindow('blended',cv2.WINDOW_NORMAL)
-cv2.resizeWindow('blended', 500,500)
+cv2.resizeWindow('blended', 1000,1000)
 cv2.imshow('blended',blended_img2)
 
-# i = 0
-# for s in range(20):
-#     rotated_template = rotate_image(template, i)
-#     i += 360/20
-#     cv2.imshow('rotated_template',rotated_template)
-#     if cv2.waitKey(500) & 0xFF == ord('q'):
-#         cv2.destroyAllWindows()
+
+elapsed = time.time() - t
+print(elapsed)
 
 if cv2.waitKey(0) & 0xFF == ord('q'):
     cv2.destroyAllWindows()
