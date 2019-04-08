@@ -24,3 +24,8 @@ locks:
   topic   : mechROS/emergency_stop
   timeout : 0.0    
   priority: 255
+
+- name    : Calibrating
+  topic   : /imu_mag_converter/calibrating
+  timeout : 0.0    
+  priority: 255
