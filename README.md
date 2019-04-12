@@ -79,8 +79,8 @@ Hosted on another [repo](https://github.com/adyczech/AR_GUI "AR_GUI").
 ### Automatic comparsion of created map from SLAM with ground truth map
 
 <p align="center">
-  <img src="/map/map_comparsion/MechLAB_2_transformed.png" width="400" alt= "Created map" title="Created map from SLAM" hspace="20" />
-  <img src="/map/map_comparsion/MechLAB_ground_truth.png" width="400" alt="Ground truth" title="Ground truth map" hspace="20" />
+  <img src="/map/map_comparsion/MechLAB_2_transformed.png" width="350" alt= "Created map" title="Created map from SLAM" hspace="20" />
+  <img src="/map/map_comparsion/MechLAB_ground_truth.png" width="350" alt="Ground truth" title="Ground truth map" hspace="20" />
 </p>
 
 <p align = "center">
