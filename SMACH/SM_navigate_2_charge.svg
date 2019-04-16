@@ -151,7 +151,7 @@
 </a>
 </g>
 <g id="a_edge1&#45;label"><a xlink:href="/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/NAVIGATE_TO_PLUG_AND_CONTROL:preempted:/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/preempted" xlink:title="preempted">
-<text text-anchor="middle" x="229" y="-135.9" font-family="Times,serif" font-size="12.00">preempted</text>
+<text text-anchor="middle" x="230" y="-135.9" font-family="Times,serif" font-size="12.00">preempted</text>
 </a>
 </g>
 </g>
@@ -163,7 +163,7 @@
 </a>
 </g>
 <g id="a_edge2&#45;label"><a xlink:href="/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/NAVIGATE_TO_PLUG_AND_CONTROL:aborted:/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/aborted" xlink:title="aborted">
-<text text-anchor="middle" x="173" y="-135.9" font-family="Times,serif" font-size="12.00">aborted</text>
+<text text-anchor="middle" x="168" y="-135.9" font-family="Times,serif" font-size="12.00">aborted</text>
 </a>
 </g>
 </g>
@@ -183,7 +183,7 @@
 </a>
 </g>
 <g id="a_edge3&#45;label"><a xlink:href="/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/NAVIGATE_TO_PLUG_AND_CONTROL:succeeded:/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/STOP_ROBOT" xlink:title="succeeded">
-<text text-anchor="middle" x="367.5" y="-187.4" font-family="Times,serif" font-size="12.00">succeeded</text>
+<text text-anchor="middle" x="378.0" y="-187.4" font-family="Times,serif" font-size="15.00">succeeded</text>
 </a>
 </g>
 </g>
@@ -195,7 +195,7 @@
 </a>
 </g>
 <g id="a_edge4&#45;label"><a xlink:href="/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/NAVIGATE_BEFORE_STATION:preempted:/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/preempted" xlink:title="preempted">
-<text text-anchor="middle" x="130" y="-187.4" font-family="Times,serif" font-size="12.00">preempted</text>
+<text text-anchor="middle" x="133" y="-187.4" font-family="Times,serif" font-size="12.00">preempted</text>
 </a>
 </g>
 </g>
@@ -207,7 +207,7 @@
 </a>
 </g>
 <g id="a_edge5&#45;label"><a xlink:href="/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/NAVIGATE_BEFORE_STATION:aborted:/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/aborted" xlink:title="aborted">
-<text text-anchor="middle" x="51" y="-187.4" font-family="Times,serif" font-size="12.00">aborted</text>
+<text text-anchor="middle" x="55" y="-187.4" font-family="Times,serif" font-size="12.00">aborted</text>
 </a>
 </g>
 </g>
@@ -219,7 +219,7 @@
 </a>
 </g>
 <g id="a_edge6&#45;label"><a xlink:href="/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/NAVIGATE_BEFORE_STATION:succeeded:/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/NAVIGATE_TO_PLUG_AND_CONTROL" xlink:title="succeeded">
-<text text-anchor="middle" x="263.5" y="-282.4" font-family="Times,serif" font-size="12.00">succeeded</text>
+<text text-anchor="middle" x="272.0" y="-282.4" font-family="Times,serif" font-size="15.00">succeeded</text>
 </a>
 </g>
 </g>
@@ -238,12 +238,12 @@
 <!-- /SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/STOP_ROBOT&#45;&gt;/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING:succeeded -->
 <g id="edge7" class="edge"><title>/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/STOP_ROBOT&#45;&gt;/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING:succeeded</title>
 <g id="a_edge7"><a xlink:href="/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/STOP_ROBOT:velocity_published:/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/succeeded" xlink:title="velocity_published">
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.333333" d="M385.452,-121.195C375.104,-104.709 359.362,-79.6273 348.65,-62.5617"/>
-<polygon fill="#000000" fill-opacity="0.333333" stroke="#000000" stroke-width="2" stroke-opacity="0.333333" points="351.564,-60.6201 343.283,-54.0109 345.635,-64.3415 351.564,-60.6201"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="1.0" d="M385.452,-121.195C375.104,-104.709 359.362,-79.6273 348.65,-62.5617"/>
+<polygon fill="#000000" fill-opacity="1.0" stroke="#000000" stroke-width="2" stroke-opacity="1.0" points="351.564,-60.6201 343.283,-54.0109 345.635,-64.3415 351.564,-60.6201"/>
 </a>
 </g>
 <g id="a_edge7&#45;label"><a xlink:href="/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/STOP_ROBOT:velocity_published:/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL/COMPLETE_NAVIGATION_FOR_CHARGING/succeeded" xlink:title="velocity_published">
-<text text-anchor="middle" x="413" y="-84.4" font-family="Times,serif" font-size="12.00">velocity_published</text>
+<text text-anchor="middle" x="411" y="-60.0" font-family="Times,serif" font-size="15.00">velocity_published</text>
 </a>
 </g>
 </g>

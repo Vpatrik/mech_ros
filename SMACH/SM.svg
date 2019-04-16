@@ -97,12 +97,12 @@
 <!-- /SM_ROOT/NAVIGATION_LOOP/__proxy__&#45;&gt;/SM_ROOT/NAVIGATION_LOOP/__proxy__ -->
 <g id="edge4" class="edge"><title>/SM_ROOT/NAVIGATION_LOOP/__proxy__&#45;&gt;/SM_ROOT/NAVIGATION_LOOP/__proxy__</title>
 <g id="a_edge4"><a xlink:href="/SM_ROOT/NAVIGATION_LOOP:loop:/SM_ROOT/NAVIGATION_LOOP" xlink:title="loop">
-<path fill="none" stroke="black" stroke-width="2" d="M208.697,-135.404C229.394,-134.63 244.5,-131.829 244.5,-127 244.5,-123.001 234.14,-120.392 218.825,-119.175"/>
+<path fill="none" stroke="black" stroke-width="2" d="M208.697,-131.504C229.394,-131.0 244.5,-130.829 244.5,-124 244.5,-121.001 234.14,-119.392 218.825,-119.175"/>
 <polygon fill="black" stroke="black" stroke-width="2" points="218.88,-115.672 208.697,-118.596 218.481,-122.661 218.88,-115.672"/>
 </a>
 </g>
 <g id="a_edge4&#45;label"><a xlink:href="/SM_ROOT/NAVIGATION_LOOP:loop:/SM_ROOT/NAVIGATION_LOOP" xlink:title="loop">
-<text text-anchor="middle" x="255.5" y="-123.9" font-family="Times,serif" font-size="12.00">loop</text>
+<text text-anchor="middle" x="228.0" y="-136.0" font-family="Times,serif" font-size="15.00">loop</text>
 </a>
 </g>
 </g>
@@ -121,7 +121,7 @@
 </a>
 </g>
 <g id="a_edge1&#45;label"><a xlink:href="/SM_ROOT/NAVIGATION_LOOP:charge:/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL" xlink:title="charge">
-<text text-anchor="middle" x="368" y="-171.4" font-family="Times,serif" font-size="12.00">charge</text>
+<text text-anchor="middle" x="368" y="-185.0" font-family="Times,serif" font-size="15.00">charge</text>
 </a>
 </g>
 </g>
@@ -157,7 +157,7 @@
 </a>
 </g>
 <g id="a_edge5&#45;label"><a xlink:href="/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL:retry:/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL" xlink:title="retry">
-<text text-anchor="middle" x="969.5" y="-123.9" font-family="Times,serif" font-size="12.00">retry</text>
+<text text-anchor="middle" x="945.0" y="-137.0" font-family="Times,serif" font-size="15.00">retry</text>
 </a>
 </g>
 </g>
@@ -176,7 +176,7 @@
 </a>
 </g>
 <g id="a_edge8&#45;label"><a xlink:href="/SM_ROOT/NAVIGATION_TO_CHARGE_WITH_CONTROL:succeeded:/SM_ROOT/CHARGING" xlink:title="succeeded">
-<text text-anchor="middle" x="485.25" y="-133.4" font-family="Times,serif" font-size="12.00">succeeded</text>
+<text text-anchor="middle" x="485.25" y="-135.0" font-family="Times,serif" font-size="15.00">succeeded</text>
 </a>
 </g>
 </g>
@@ -212,7 +212,7 @@
 </a>
 </g>
 <g id="a_edge11&#45;label"><a xlink:href="/SM_ROOT/CHARGING:succeeded:/SM_ROOT/NAVIGATION_LOOP" xlink:title="succeeded">
-<text text-anchor="middle" x="270.75" y="-133.4" font-family="Times,serif" font-size="12.00">succeeded</text>
+<text text-anchor="middle" x="291.0" y="-135.0" font-family="Times,serif" font-size="15.00">succeeded</text>
 </a>
 </g>
 </g>

@@ -11,18 +11,6 @@ K3 = 5
 A3 = 1.1
 alfa = 0.1
 
-covariances = np.zeros([5,3,3])
-min_covariance = 1e-4
-
-# covariances[0] = np.array([[0,1,2],[3,4,5],[6,7,8]])
-
-mean = np.zeros([5,1,3])
-# print(mean)
-# print(covariances[:])
-# print(mean.shape[0])
-# Cov_matrix = np.zeros([3,3])
-# print(Cov_matrix)
-
 # Compute product for n gaussians
 def multiVariateGaussianProduct(Mean_vectors, Cov_matrices):
 
@@ -162,72 +150,7 @@ def calculateTransformedCovariance(a_x, a_y, fi, x, y, Fi, covarianceMeas, covar
 
     return transformedCovariance
 
-covariances = np.random.rand(3,3,3)
-mean = np.random.rand(3,3,1)
-
-# print(mean)
-# print("--------------------")
-# mean = mean[:-1]
-# print(mean)
-
-# print(covariances[0])
-# mean[0] = np.array((8))
-# mean[1] = np.array((2))
-
-# covariances[0] = np.array((0.5))
-# covariances[1] = np.array((0.5))
-
-# cov_meas, cov_trans = calculateCovariances(20000, 2)
-# print(cov_meas)
-# print(cov_trans)
-
-# mean_n, cov_n = multiVariateGaussianProduct(mean, covariances)
-
-# print(mean_n[2])
-# print(cov_n)
-
-# cov = np.random.rand(3,3)
-
-# tr_cov = calculateTransformedCovariance(5,2,1.57,3,4,3.15, cov_meas, cov_trans)
-# tr_cov[0,2] = 1
-# print(tr_cov)
-
-# print(tr_cov.dot(np.eye(3)).T)
-# print(tr_cov[:2,:2])
-
-# pok = np.zeros((1,3,3))
-# print(pok[0])
-
-
-# a = []
-# b = [1,2,3]
-# c = [0,0,0]
-# d = [7,8,9]
-# e = [1,20,1]
-# a.append(b)
-# a.append(c)
-# a.append(d)
-# a.append(e)
-
-# # # m = np.matrix(a)
-# n = np.array(a)
-
-# n*=10
-# print(n)
-# # print(m)
-# print(n)
-# cov_imu = np.cov(n,rowvar = False)
-# print(cov_imu)
-
-# mean = np.mean(n, axis = 0)
-# print(mean)
-
-
-# s = np.zeros([3,1])
-# print(s)
-
 # Non information multivariate gaussian product
-
 def non_inf_mult_gauss(Mean_vectors, Cov_matrices):
 
     # Initialize resulting matrices
@@ -262,28 +185,12 @@ def non_inf_mult_gauss(Mean_vectors, Cov_matrices):
 
     return Mean_vector, Cov_matrix
 
-num = 3
-A = np.random.rand(num,3,3)
-covariances = np.zeros([num,3,3])
-for i in range(num):
-    covariances[i] = np.dot(A[i],A[i].T)
-
-mean = np.random.rand(num,3,1)
-
-# print(covariances)
-
-# m, c = non_inf_mult_gauss(mean,covariances)
-# u,v = multiVariateGaussianProduct(mean, covariances)
-
-# print(m)
-# print(c)
-
 # timeit.timeit(stmt='pass', setup='pass', timer=<default timer>, number=1000000, globals=None)
 # print(covariances)
 # setup = "import numpy as np"
 # mean = np.random.rand(num,3,1)
 
-def inf():
+def chol():
     SETUP_CODE = '''
 from __main__ import non_inf_mult_gauss
 import numpy as np
@@ -304,12 +211,12 @@ non_inf_mult_gauss(mean,covariances)
     times = timeit.repeat(setup = SETUP_CODE, 
                           stmt = TEST_CODE, 
                           repeat = 1, 
-                          number = 100000)
+                          number = 10000)
     # priniting minimum exec. time 
     print('Cholesky: {}'.format(min(times)))
 
 
-def chol():
+def inf():
     SETUP_CODE = '''
 from __main__ import multiVariateGaussianProduct
 import numpy as np
@@ -329,7 +236,7 @@ multiVariateGaussianProduct(mean,covariances)
     times = timeit.repeat(setup = SETUP_CODE, 
                           stmt = TEST_CODE, 
                           repeat = 1, 
-                          number = 100000)
+                          number = 10000)
     # priniting minimum exec. time 
     print('Informative: {}'.format(min(times)))
 
@@ -345,40 +252,6 @@ multiVariateGaussianProduct(mean,covariances)
 # print(timeit.timeit(stmt =Test_code,setup=setup, number=100))
 
 
-# if __name__ == "__main__":
-#     chol()
-#     inf()
-
-pok = np.random.rand(3,3,3)
-# pok = np.ones((3,3,3))
-print(pok[0])
-print(pok[0,:2,:2])
-print(pok[0,2,2])
-ful = pok[:,0,0]
-inv = 1/ful
-print(ful)
-print(inv)
-print(sum(inv))
-print(sum(1/pok[:,0,0]))
-ful_sum = np.sum(pok[:,0,0])
-print(ful_sum)
-
-print(np.sum(pok, axis = 0)/pok.shape[0])
-if pok.size == 0:
-    print(pok)
-
-print(pok[1,0,0])
-nul = np.ones((10,3))*2
-nul2 = np.ones((10,3))*3
-res = nul - nul2
-mult = nul*nul2
-suma = np.sum(mult, axis=0)
-print(mult)
-print(suma/50)
-# print(nul.size)
-# print(nul.shape)
-# print(nul)
-# print(pok)
-
-res2 = mult - suma/50
-print(res2)
+if __name__ == "__main__":
+    chol()
+    inf()
