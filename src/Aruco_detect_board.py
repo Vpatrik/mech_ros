@@ -347,25 +347,6 @@ def aruco_detect(camera_matrix, dist_coeff):
 
                     surface = cv2.contourArea(ch_corners, False)
                     aruco_Marker_b.surface = surface
-                    # Surface - here used for display difference between board ang marker yaw
-                    # if marker_yaw is not None:
-
-
-                    #     if Euler[2] > math.pi/2:
-                    #         Euler[2]-=math.pi
-                    #     else:
-                    #         Euler[2]+=math.pi
-                    #     if marker_yaw > math.pi/2:
-                    #         marker_yaw-=math.pi
-                    #     else:
-                    #         marker_yaw+=math.pi
-
-                        # aruco_Marker.surface = (Euler[2] - marker_yaw)*180/(math.pi)
-
-
-                        # aruco_Marker.pose.orientation.r = -tvec[2] - x_tr - marker_x
-                        # aruco_Marker.pose.orientation.p = tvec[0] - y_tr - marker_y
-
 
                     # Coordinate vector of camera position from marker in camera coordinate frame
                     aruco_Marker_b.pose.position.x = -tvec[2]
@@ -419,11 +400,7 @@ def aruco_detect(camera_matrix, dist_coeff):
                 writer.writerow(row)
             csvFile.close()
 
-            rospy.loginfo("Measurement ended!")
-
-            # Write to file
-            # Matrix_cov_meas, Matrix_cov_err
-            
+            rospy.loginfo("Measurement ended!")          
 
         # frame = cv2.flip(frame,0)	
         cv2.imshow('frame',frame)

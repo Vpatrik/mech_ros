@@ -39,10 +39,6 @@ arucoParams.cornerRefinementMaxIterations = 35
 arucoParams.markerBorderBits = 1
 arucoParams.maxErroneousBitsInBorderRate = 0.4
 
-# camera_matrix=np.array([[1337.3442041956487, 0.0, 829.6600891797842],[0.0, 1337.5855702824913, 485.17756483016257],[0.0,0.0,1.0]])
-# dist_coeff = np.array([0.1954298919955456, -0.16441936311127164, -0.004914964353264576, -0.00014855354072454622,-1.0316591472028718])
-
-
 
 ## Initialization
 bridge = CvBridge()
@@ -51,22 +47,6 @@ markerCorners = np.array([])
 rejectedImgPoints = np.array([])
 markerLength = 0.1778*0.75
 
-
-
-# Vytvoreni rotacni matice odpovidajici RPY [pi/2,0,pi/2]
-# rot = np.array([[0, -1, 0],
-#                 [0, 0, -1],
-#                 [1, 0, 0]])
-
-# # Matrix for conversion from ROS frame to OpenCV for camera
-# rot_cam = np.array([[  0.0,  0.0,   1.0],
-#  [  -1.0,   0.0,  0.0],
-#  [  0.0,   -1.0,   0.0]])
-
-#  # Matrix for conversion from ROS frame to OpenCV for marker
-# rot_mark = np.array([[  0.0,  0.0,   1.0],
-#  [  1.0,   0.0,  0.0],
-#  [  0.0,   1.0,   0.0]])
 
 # Matrix for conversion from ROS frame to OpenCV in camera
 R_ROS_O_camera = np.array([[  0.0,  0.0,   1.0],
@@ -121,36 +101,6 @@ def rotationMatrixToEulerAngles(M, cy_thresh=None):
         x = 0.0
     return [x, y, z]
 
-## Tohle je jine poradi rotaci (x,y,z)
-# def rotationMatrixToEulerAngles(R):
-#     # https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2012/07/euler-angles1.pdf
-#     roll = math.atan2(R[1,2], R[2,2])
-#     pitch = math.atan2(-R[0,2], ((R[0,0]**2+R[0,1]**2)**0.5))
-#     s1 = math.sin(roll)
-#     c1 = math.cos(roll)
-#     yaw = math.atan2((s1*R[2,0]-c1*R[1,0]), (c1*R[1,1] - s1*R[2,1]))
-
-#     return [roll, pitch, yaw]
-
-
-## Tohle je spravne, ale neni tu resena singularita
-# def rotationMatrixToEulerAngles(R) :
-#      # TO DO - avoid singularity
-
-#     # pitch = math.asin(R[2,0])
-#     # yaw = math.atan2(R[1,0], R[0,0])
-#     # roll = math.atan2(R[2,1], R[2,2])
-
-#     if R[0,2] > 1:
-#         R[0,2] = 1
-#     elif R[0,2]< -1:
-#         R[0,2] = -1
-#     pitch = math.asin(R[0,2])
-#     yaw = math.atan2(-R[0,1], R[0,0])
-#     roll = math.atan2(-R[1,2], R[2,2])
-
-#     return [roll, pitch, yaw]
-
 
 def image_callback(frame):
     global bridge
@@ -186,13 +136,6 @@ def image_callback(frame):
             Rmat = np.zeros(shape=(3,3))
             cv2.Rodrigues(rvec[i][0],Rmat)
 
-
-            # # Convert from Opencv frame to ROS frame in camera
-            # R = np.dot(rot_cam, Rmat)
-
-            # # Convert inverted matrix from Opencv frame to ROS frame in marker
-            # R = np.dot(rot_mark, R.transpose())
-
             # Convert from Opencv frame to ROS frame in camera
             R = np.dot(R_ROS_O_camera, Rmat)
 
@@ -200,7 +143,6 @@ def image_callback(frame):
             R = np.dot(R, R_O_ROS_marker)
 
             # Convert from Rotation matrix to Euler angles
-            # Euler = rotationMatrixToEulerAngles(R.transpose()) # rotace z kamery do markeru
             Euler = rotationMatrixToEulerAngles(R.T) # rotace z markeru do kamery
 
             # Fill Marker orientation vector
