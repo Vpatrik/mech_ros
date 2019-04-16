@@ -32,7 +32,7 @@ from std_msgs.msg import Int8
 
 class WaitForBatteryLevel(smach.State):
 
-    def __init__(self, threshold = 3.5, lower = True):
+    def __init__(self, threshold = 3.3, lower = True):
         smach.State.__init__(self, outcomes=['level_reached', 'preempted'], input_keys=[], output_keys=[])
         self.signal = threading.Event()
         self.subscriber = None

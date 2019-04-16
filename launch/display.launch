@@ -1,9 +1,8 @@
 <launch>
 
   <arg name="model" default="$(find mech_ros)/robot_description/urdf/mechROS.xacro"/>
-<!--  <arg name="model" default="$(find bioloid_typea_description)/typea.urdf"/>-->
-  <arg name="gui" default="true" />
-  <arg name="rvizconfig" default="$(find mech_ros)/rviz/urdf_map.rviz" />
+  <arg name="gui" default="false" />
+  <arg name="rvizconfig" default="$(find mech_ros)/rviz/navigation_real.rviz" />
   <arg name="map_file" default="$(find mech_ros)/map/muzeum_map.yaml"/>
 
 
@@ -11,10 +10,13 @@
   <param name="use_gui" value="$(arg gui)"/>
 
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+   <node pkg="robot_state_publisher" type="robot_state_publisher"  name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="30.0" />
+    <!-- <param name="use_tf_static" value="False" /> -->
+  </node>
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
   <!-- Map server -->
-  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+  <!-- <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/> -->
 
 </launch>

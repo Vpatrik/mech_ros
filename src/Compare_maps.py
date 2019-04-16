@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# Patrik Vavra 2019
 
 import numpy as np
 import cv2
