@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+# Patrik Vavra 2019
+
+"""
+Node which receives raw data from rosserial_python node from arduino, transform data in
+physical meaning and fill type of messages to use default Madgwick node
+Calibration on Start
+Recalibration as Service - /start_recalibraion, /stop_recalibration
+TODO - implement velocity lock when calibrating imu
+"""
+
 import rospy
 import sys
 
@@ -20,11 +30,6 @@ import yaml
 
 from numpy import linalg, array, sin, cos, multiply, dot, zeros, mean
 
-# Node which receives raw data from rosserial_python node from arduino, transform data in
-# physical meaning and fill type of messages to use default Madgwick node
-# Calibration on Start
-# Recalibration as Service - /start_recalibraion, /stop_recalibration
-# TODO - implement velocity lock when calibrating imu
 
 class ImuMagConverter:
     def __init__(self):

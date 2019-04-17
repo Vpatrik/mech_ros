@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+
+# Patrik Vavra 2019
+
+"""
+Comparsion of different approaches to compute PoseWithCovariance from ArUco measurement
+"""
+
 import numpy as np
 import math
 import timeit

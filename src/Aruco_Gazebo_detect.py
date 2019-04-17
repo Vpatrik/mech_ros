@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+# Patrik Vavra 2019
+
+"""
+Node for detecting ArUco markers from Gazebo image and 
+publishing transformations of detected markers.
+
+"""
+
 
 import numpy as np
 import cv2
@@ -69,9 +77,6 @@ def load_coefficient(calibration_file):
             return c_matrix, dist_coeff
         except yaml.YAMLError as exc:
             print(exc)
-    # with np.load('/home/patrik/catkin_ws/src/mech_ros/map/camCal2.npz') as X:
-    #     c_matrix, dist_coeff, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
-    # return c_matrix, dist_coeff
 
 
 _FLOAT_EPS_4 = np.finfo(float).eps * 4.0

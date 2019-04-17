@@ -2,6 +2,12 @@
 
 # Patrik Vavra 2019
 
+"""
+Automatically compare ground truth map with map created from SLAM.
+This functionality exposed as Service.
+Visualization runs in seperate Thread to not latch Service server.
+"""
+
 import numpy as np
 import cv2
 import rospy

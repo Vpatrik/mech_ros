@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 
-# Node which receive raw wheels velocities data from rosserial_python node from arduino, transform data in
-# physical meaning and compute odometry message for Extended Kalman filter
+# Patrik Vavra 2019
+
+"""
+Node which receive raw wheels velocities data from rosserial_python node
+from arduino, transform data in physical meaning and compute odometry
+message for Extended Kalman filter
+"""
 
 import rospy
 import sys

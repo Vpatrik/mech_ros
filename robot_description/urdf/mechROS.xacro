@@ -31,13 +31,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 	<!-- ////////////////////////////////////////////////// -->
 
 	<!-- Robot name -->
-	<xacro:arg name="prefix" default="mechROS_"/>
+	<xacro:arg name="prefix" default="mechROS_" />
 	<xacro:arg name="wheel_offset_y" default="0.0735" />
 
 	<!-- SCALE definition -->
-	<xacro:property name="scale" value="0.01"/>
+	<xacro:property name="scale" value="0.01" />
 	<!-- meritko-->
-	<xacro:property name="Scale" value="${scale} ${scale} ${scale}"/>
+	<xacro:property name="Scale" value="${scale} ${scale} ${scale}" />
 
 	<!-- Wheel parameters -->
 	<xacro:property name="wheel_offset_x" value="0.063" />
@@ -50,21 +50,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 	<!-- ////////////////////////////////////////////////// -->
 
 	<material name="camera_color">
-		<color rgba=".01 1 .5 1"/>
+		<color rgba=".01 1 .5 1" />
 	</material>
 
 	<!-- Import files -->
 
-	<xacro:include filename="$(find mech_ros)/robot_description/urdf/rubber_wheel.urdf.xacro"/>
-	<xacro:include filename="$(find mech_ros)/robot_description/urdf/mechROS_control.gazebo.xacro"/>
-	<xacro:include filename="$(find mech_ros)/robot_description/urdf/mechROS_control.gazebo.xacro"/>
+	<xacro:include filename="$(find mech_ros)/robot_description/urdf/rubber_wheel.urdf.xacro" />
+	<xacro:include filename="$(find mech_ros)/robot_description/urdf/mechROS_control.gazebo.xacro" />
+	<xacro:include filename="$(find mech_ros)/robot_description/urdf/mechROS_control.gazebo.xacro" />
 	<xacro:include filename="$(find mech_ros)/robot_description/sensors/urdf/all_sensors.urdf.xacro" />
 
 
-	<xacro:property name="PI" value="3.1415926535897931"/>
+	<xacro:property name="PI" value="3.1415926535897931" />
 
 	<material name="gray_color">
-		<color rgba=".75 .75 .75 1"/>
+		<color rgba=".75 .75 .75 1" />
 	</material>
 
 	<!-- LINKS -->
@@ -74,17 +74,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 
 	<link name="$(arg prefix)base_link">
 		<visual>
-			<origin xyz="0.011 -0.060276 0" rpy="${PI/2} 0 ${PI/2}"/>
+			<origin xyz="0.011 -0.060276 0" rpy="${PI/2} 0 ${PI/2}" />
 			<geometry>
-				<mesh filename="package://mech_ros/robot_description/meshes/Chassis_10000.stl" scale="${Scale}"/>
+				<mesh filename="package://mech_ros/robot_description/meshes/Chassis_10000.stl" scale="${Scale}" />
 
 			</geometry>
-			<material name="gray_color"/>
+			<material name="gray_color" />
 		</visual>
 		<collision>
-			<origin xyz="0.008 0 0.023" rpy="0 0 0"/>
+			<origin xyz="0.008 0 0.023" rpy="0 0 0" />
 			<geometry>
-				<box size="0.242 0.11 0.085"/>
+				<box size="0.242 0.11 0.085" />
 			</geometry>
 		</collision>
 	</link>
@@ -101,9 +101,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 	</link>
 
 	<joint name="$(arg prefix)base_link" type="fixed">
-		<parent link="$(arg prefix)base_link"/>
-		<child link="Inertia"/>
-		<origin xyz="0.0 0.0 0.0"/>
+		<parent link="$(arg prefix)base_link" />
+		<child link="Inertia" />
+		<origin xyz="0.0 0.0 0.0" />
 	</joint>
 
 
@@ -119,36 +119,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 
 	<!-- Here we create the robot elements using the xacro:macros imported at the beggining of this file -->
 	<xacro:rubber_wheel prefix="front_right" parent="$(arg prefix)base_link" reflect="false">
-		<origin xyz="${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+		<origin xyz="${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0" />
 	</xacro:rubber_wheel>
 
 	<xacro:rubber_wheel prefix="front_left" parent="$(arg prefix)base_link" reflect="true">
-		<origin xyz="${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+		<origin xyz="${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0" />
 	</xacro:rubber_wheel>
 
 	<xacro:rubber_wheel prefix="back_left" parent="$(arg prefix)base_link" reflect="true">
-		<origin xyz="-${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+		<origin xyz="-${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0" />
 	</xacro:rubber_wheel>
 
 	<xacro:rubber_wheel prefix="back_right" parent="$(arg prefix)base_link" reflect="false">
-		<origin xyz="-${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+		<origin xyz="-${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0" />
 	</xacro:rubber_wheel>
 
 	<!-- Import IMU -->
 	<xacro:sensor_imu_hector prefix="imu" parent="$(arg prefix)base_link">
-		<origin xyz="0 0.0 0.055" rpy="0 0 0"/>
+		<origin xyz="0 0.0 0.055" rpy="0 0 0" />
 	</xacro:sensor_imu_hector>
-	
+
 	<!-- Import PiCamera -->
 	<xacro:pi_camera_sensor prefix="front" parent="$(arg prefix)base_link">
 		<!--		<origin xyz="0.088 0 0.0204" rpy="0 0 0"/>-->
-		<origin xyz="0.088 0 0.0204" rpy="0 0 0"/>
+		<origin xyz="0.088 0 0.0204" rpy="0 0 0" />
 	</xacro:pi_camera_sensor>
 
 	<!-- Import Laser -->
 	<xacro:sensor_hokuyo_urg04lx prefix="laser" parent="$(arg prefix)base_link">
-		<origin xyz="0.0 0.0 0.0804" rpy="0 0 0"/>
+		<origin xyz="0.0 0.0 0.0804" rpy="0 0 0" />
 	</xacro:sensor_hokuyo_urg04lx>
 
-	<xacro:ros_control/>
+	<xacro:ros_control />
 </robot>

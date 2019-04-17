@@ -2,6 +2,15 @@
 
 # Patrik Vavra 2019
 
+"""
+Node for detecting ArUco markers and publishing transformations of detected markers
+after tranformation to ROS coordinate system.
+
+"""
+
+
+
+
 from numpy import array, zeros, dot, load, finfo
 import cv2
 from yaml import load, YAMLError

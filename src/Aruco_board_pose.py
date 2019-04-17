@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
-# r_kola = 0.051
+# Patrik Vavra 2019
+
+"""
+Just testing node for obtaining ground truth data from camera above robot.
+To determine precision of odometry information sources
+"""
+
 
 import numpy as np
 import yaml

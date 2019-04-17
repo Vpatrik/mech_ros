@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-# For testing odometry calculation from only IMU
+"""
+Only for testing computing complete odometry from only IMU
+Not used in anywhere else
+"""
 
 import rospy
 import sys
