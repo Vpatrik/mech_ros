@@ -49,7 +49,7 @@ def main():
                                                                 0.0, 0.0, 0.0, 0.0, 0.01, 0.0,
                                                                 0.0, 0.0, 0.0, 0.0, 0.0, 0.01])
     world_frame = rospy.get_param("~world_frame", 'map')
-    simulation = rospy.get_param("~simulation", 'False')
+    simulation = rospy.get_param("~simulation", False)
     repetitions = rospy.get_param("~repetitions", 2)
 
     # # Convert pose from list data type to ROS PoseStamped

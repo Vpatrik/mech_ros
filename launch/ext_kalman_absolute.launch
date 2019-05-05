@@ -7,9 +7,9 @@
         <param name="two_d_mode" value="true"/>
       
        <!-- Otestovat zpozdeni kamery, tohle vraci filtr do doby, kdy vzniklo mereni -->
-        <param name="smooth_lagged_data" value="false"/>
+        <param name="smooth_lagged_data" value="true"/>
         <!-- Jak dlouho bude system uchovavat svoje informace kvuli zpozdeni senzoru -->
-        <param name="history_length" value="0.4"/>
+        <param name="history_length" value="0.2"/>
 
 
         <param name="map_frame" value="map"/>

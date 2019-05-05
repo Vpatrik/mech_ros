@@ -9,7 +9,6 @@ board = cv2.aruco.CharucoBoard_create(6,4,0.08,0.065,dictionary) # Doma
 # board = cv2.aruco.CharucoBoard_create(3,2,0.10,0.085,dictionary) # Mechlab
 
 
-
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_5X5_50)
 
 markerLength = 0.088

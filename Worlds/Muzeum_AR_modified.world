@@ -69,7 +69,7 @@
         <ode>
         <solver>
 <!--          <type>quick</type>-->
-<!--          <iters>50</iters>-->
+<!--          <iters>70</iters>-->
           <friction_model>cone_model</friction_model>
         </solver>
       </ode>

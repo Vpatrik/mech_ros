@@ -18,6 +18,7 @@ A2 = 1.1
 K3 = 5
 A3 = 1.1
 alfa = 0.1
+min_covariance = 1e-4
 
 # Compute product for n gaussians
 def multiVariateGaussianProduct(Mean_vectors, Cov_matrices):
@@ -52,6 +53,42 @@ def multiVariateGaussianProduct(Mean_vectors, Cov_matrices):
         inf_vec += np.dot(inf_mat, Mean_vectors[i])
 
     Cov_matrix = np.linalg.inv(inf_mat_sum)
+    Mean_vector = np.dot(Cov_matrix, inf_vec)
+
+    return Mean_vector, Cov_matrix
+
+def inversion(m):    
+    m1, m2, m3, m4, m5, m6, m7, m8, m9 = m.ravel()
+    inv = np.array([[m5*m9-m6*m8, m3*m8-m2*m9, m2*m6-m3*m5],
+                    [m6*m7-m4*m9, m1*m9-m3*m7, m3*m4-m1*m6],
+                    [m4*m8-m5*m7, m2*m7-m1*m8, m1*m5-m2*m4]])
+    return inv / np.dot(inv[0], m[:, 0])
+
+# Compute product for n gaussians
+def multiVariateGaussianProductHardCoded(Mean_vectors, Cov_matrices):
+
+    # Initialize resulting matrices
+    Cov_matrix = Cov_matrices[0]
+    Mean_vector = Mean_vectors[0]
+
+    matrices_num = Mean_vectors.shape[0]
+    variate_num = Mean_vectors.shape[1]
+    
+    if matrices_num < 2:
+        return Mean_vector, Cov_matrix
+
+    # Initialize information matrices
+    inf_vec = np.zeros([variate_num,1])
+    inf_mat = np.zeros([variate_num,variate_num])
+    inf_mat_sum = np.zeros([variate_num,variate_num])
+
+    # Compute information matrix and information vector and then convert to mean vector and covariance matrix
+    for i in range(matrices_num):
+        inf_mat = inversion(Cov_matrices[i])
+        inf_mat_sum += inf_mat
+        inf_vec += np.dot(inf_mat, Mean_vectors[i])
+
+    Cov_matrix = inversion(inf_mat_sum)
     Mean_vector = np.dot(Cov_matrix, inf_vec)
 
     return Mean_vector, Cov_matrix
@@ -208,10 +245,12 @@ from scipy import linalg as lin
     TEST_CODE = '''
 num = 4
 s = 3
+min_covariance = 1e-4
 A = np.random.rand(num,s,s)
 covariances = np.zeros([num,s,s])
 for i in range(num):
     covariances[i] = np.dot(A[i],A[i].T)
+covariances[covariances < min_covariance] = min_covariance
 mean = np.random.rand(num,s,1)
 non_inf_mult_gauss(mean,covariances)
 '''
@@ -219,7 +258,7 @@ non_inf_mult_gauss(mean,covariances)
     times = timeit.repeat(setup = SETUP_CODE, 
                           stmt = TEST_CODE, 
                           repeat = 1, 
-                          number = 10000)
+                          number = 100)
     # priniting minimum exec. time 
     print('Cholesky: {}'.format(min(times)))
 
@@ -233,10 +272,12 @@ import numpy as np
     TEST_CODE = '''
 num = 4
 s = 3
+min_covariance = 1e-4
 A = np.random.rand(num,s,s)
 covariances = np.zeros([num,s,s])
 for i in range(num):
     covariances[i] = np.dot(A[i],A[i].T)
+covariances[covariances < min_covariance] = min_covariance
 mean = np.random.rand(num,s,1)
 multiVariateGaussianProduct(mean,covariances)
 '''
@@ -244,9 +285,37 @@ multiVariateGaussianProduct(mean,covariances)
     times = timeit.repeat(setup = SETUP_CODE, 
                           stmt = TEST_CODE, 
                           repeat = 1, 
-                          number = 10000)
+                          number = 100)
     # priniting minimum exec. time 
     print('Informative: {}'.format(min(times)))
+
+
+def infHardCoded():
+    SETUP_CODE = '''
+from __main__ import multiVariateGaussianProductHardCoded
+import numpy as np
+    '''
+
+    TEST_CODE = '''
+num = 4
+s = 3
+min_covariance = 1e-4
+A = np.random.rand(num,s,s)
+covariances = np.zeros([num,s,s])
+for i in range(num):
+    covariances[i] = np.dot(A[i],A[i].T)
+covariances[covariances < min_covariance] = min_covariance
+
+mean = np.random.rand(num,s,1)
+multiVariateGaussianProductHardCoded(mean,covariances)
+'''
+    # timeit.repeat statement 
+    times = timeit.repeat(setup = SETUP_CODE, 
+                          stmt = TEST_CODE, 
+                          repeat = 1, 
+                          number = 100)
+    # priniting minimum exec. time 
+    print('Informative hard_coded: {}'.format(min(times)))
 
 # mean1, cov1 = non_inf_mult_gauss(mean,covariances)
 # mean2, cov2 = multiVariateGaussianProduct(mean,covariances)
@@ -263,3 +332,4 @@ multiVariateGaussianProduct(mean,covariances)
 if __name__ == "__main__":
     chol()
     inf()
+    infHardCoded()

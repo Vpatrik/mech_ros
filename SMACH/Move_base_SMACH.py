@@ -100,7 +100,7 @@ def main():
                 goal_slots=['path']
             ),
             transitions={
-                'succeeded': 'WAIT_FOR_GOAL',
+                'succeeded': 'succeeded',
                 'aborted': 'RECOVERY',
                 'preempted': 'preempted'
             }

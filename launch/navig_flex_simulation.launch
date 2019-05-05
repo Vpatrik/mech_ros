@@ -61,6 +61,7 @@
     <param name="min_covariance" value="0.0001" />
     <param name="marker_detector_topic" value="/markers" />
     <param name="estimated_pose_topic" value="/estimated_pose_markers" />
+    <param name="use_multivariate_product" value="True" />
   </node>
 
   <!-- Extended Kalman - relatve -->
@@ -88,8 +89,5 @@
                                   0.0,  0.0,  0.707106781, 0.707106781 ]</rosparam>
   </node>
 
-  <!-- Charging station -->
-  <node pkg="mech_ros" type="Charging_station.py" name="charging_station" output="screen"/>
-
-
+ 
 </launch>

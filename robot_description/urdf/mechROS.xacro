@@ -57,7 +57,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 
 	<xacro:include filename="$(find mech_ros)/robot_description/urdf/rubber_wheel.urdf.xacro" />
 	<xacro:include filename="$(find mech_ros)/robot_description/urdf/mechROS_control.gazebo.xacro" />
-	<xacro:include filename="$(find mech_ros)/robot_description/urdf/mechROS_control.gazebo.xacro" />
 	<xacro:include filename="$(find mech_ros)/robot_description/sensors/urdf/all_sensors.urdf.xacro" />
 
 
@@ -77,10 +76,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 			<origin xyz="0.011 -0.060276 0" rpy="${PI/2} 0 ${PI/2}" />
 			<geometry>
 				<mesh filename="package://mech_ros/robot_description/meshes/Chassis_10000.stl" scale="${Scale}" />
-
 			</geometry>
 			<material name="gray_color" />
 		</visual>
+
 		<collision>
 			<origin xyz="0.008 0 0.023" rpy="0 0 0" />
 			<geometry>
@@ -90,12 +89,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 	</link>
 
 	<link name="Inertia">
-		<!-- !!!!!!!!!!!!!!!!!!!-->
-		<!--NASTAVAIT SPRAVNE INERTIAL-->
 		<inertial>
 			<origin xyz="0 0 0.02" />
 			<mass value="1.172" />
-			<!--	<mass value="1" />-->
 			<inertia ixx="0.001568" ixy="0.0" ixz="0.0" iyy="0.003775" iyz="0.0" izz="0.00483" />
 		</inertial>
 	</link>
@@ -117,7 +113,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 	<!-- Robots Elements -->
 	<!-- *************** -->
 
-	<!-- Here we create the robot elements using the xacro:macros imported at the beggining of this file -->
+	<!-- Add elements  -->
 	<xacro:rubber_wheel prefix="front_right" parent="$(arg prefix)base_link" reflect="false">
 		<origin xyz="${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0" />
 	</xacro:rubber_wheel>
@@ -141,7 +137,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 
 	<!-- Import PiCamera -->
 	<xacro:pi_camera_sensor prefix="front" parent="$(arg prefix)base_link">
-		<!--		<origin xyz="0.088 0 0.0204" rpy="0 0 0"/>-->
 		<origin xyz="0.088 0 0.0204" rpy="0 0 0" />
 	</xacro:pi_camera_sensor>
 

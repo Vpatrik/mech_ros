@@ -9,11 +9,18 @@ import yaml
 from geometry_msgs.msg import (PoseWithCovarianceStamped, Quaternion,
                                Transform, TransformStamped)
 from mech_ros_msgs.msg import Marker, MarkerList
-from numpy import dot, linalg, sum, where, zeros
+from numpy import dot, linalg, where, zeros, ones, array
+from numpy import sum as sum_n
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 from scipy import linalg as lin
 
+def inversion(m):    
+    m1, m2, m3, m4, m5, m6, m7, m8, m9 = m.ravel()
+    inv = array([[m5*m9-m6*m8, m3*m8-m2*m9, m2*m6-m3*m5],
+                    [m6*m7-m4*m9, m1*m9-m3*m7, m3*m4-m1*m6],
+                    [m4*m8-m5*m7, m2*m7-m1*m8, m1*m5-m2*m4]])
+    return inv / dot(inv[0], m[:, 0])
 
 class PoseEstimator():
     def __init__(self):
@@ -130,7 +137,7 @@ class PoseEstimator():
         cov_a = dot(dot(J_a, covarianceMeas), J_a.T) + dot(dot(J_p, covarianceTrans), J_p.T)
 
         # Make 3x3 covariance matrix for transformed: a_x', a_y', theta  (theta = Fi + fi)
-        transformedCovariance = zeros([3,3])
+        transformedCovariance = ones([3,3])*self.min_covariance
         transformedCovariance[:2,:2] = cov_a
         transformedCovariance[2,2] = covarianceTrans[2][2]
         transformedCovariance[transformedCovariance < self.min_covariance] = self.min_covariance
@@ -157,12 +164,12 @@ class PoseEstimator():
         try:
             for i in range(matrices_num):
                 
-                inf_mat = linalg.inv(Cov_matrices[i])
+                inf_mat = inversion(Cov_matrices[i])
                 inf_mat_sum += inf_mat
                 inf_vec += dot(inf_mat, Mean_vectors[i])
 
 
-            Cov_matrix = linalg.inv(inf_mat_sum)
+            Cov_matrix = inversion(inf_mat_sum)
             Mean_vector = dot(Cov_matrix, inf_vec)
 
             return Mean_vector, Cov_matrix
@@ -227,15 +234,15 @@ class PoseEstimator():
 
 
     def averageMeasurement(self, Mean_vectors, Cov_matrices):
-        sum_sigma_x = sum(1/Cov_matrices[:,0,0])
-        sum_sigma_y = sum(1/Cov_matrices[:,1,1])
-        sum_sigma_fi = sum(1/Cov_matrices[:,2,2])
+        sum_sigma_x = sum_n(1/Cov_matrices[:,0,0])
+        sum_sigma_y = sum_n(1/Cov_matrices[:,1,1])
+        sum_sigma_fi = sum_n(1/Cov_matrices[:,2,2])
 
 
         matrices_num = Mean_vectors.shape[0]
         mean_vec = zeros([3,1])
 
-        avg_cov = sum(Cov_matrices, axis = 0)/(matrices_num**2)
+        avg_cov = sum_n(Cov_matrices, axis = 0)/(matrices_num**2)
 
         for i in range(matrices_num):
             mean_vec[0,0] += Mean_vectors[i,0,0]/(sum_sigma_x*Cov_matrices[i,0,0])
@@ -361,9 +368,6 @@ class PoseEstimator():
             # cov_pose[30] = cov_pose[5]
             # cov_pose[31] = cov_pose[11]
             self.estimated.pose.covariance[35] = cov_tr[2,2]
-
-            # Scale factor due to multivariate gaussian product is not gaussian without scale
-            # TODO
 
             self.pose_publisher.publish(self.estimated)
 
