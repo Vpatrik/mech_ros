@@ -288,9 +288,9 @@ class Visualization(Thread):
                 cv2.putText(self.image,percentage,(20,30), font, 0.8,(0,0,0),1,cv2.LINE_AA)
                 cv2.putText(self.image,evaluation,(20,55), font, 0.8,(0,0,0),1,cv2.LINE_AA)
 
-                cv2.namedWindow('Comparsion',cv2.WINDOW_NORMAL)
-                cv2.resizeWindow('Comparsion', 1000,1000)
-                cv2.imshow('Comparsion',self.image)
+                cv2.namedWindow('Comparision',cv2.WINDOW_NORMAL)
+                cv2.resizeWindow('Comparision', 1000,1000)
+                cv2.imshow('Comparision',self.image)
 
                 # Press escape to close window
                 if cv2.waitKey(0) == 27:

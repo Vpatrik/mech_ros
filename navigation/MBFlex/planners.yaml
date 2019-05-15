@@ -3,8 +3,7 @@ planners:
     type: 'global_planner/GlobalPlanner'
   - name: 'Charging_station_planner'
     type: 'global_planner/GlobalPlanner'
-#  - name: 'SBPLLatticePlanner'
-#    type: 'SBPLLatticePlanner'
+
 planner_patience: 10.0
 
 Normal_planner:                                  # Also see: http://wiki.ros.org/global_planner

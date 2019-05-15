@@ -114,7 +114,7 @@ def main():
 
         with navig_cc:
 
-            whole_navig = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'charging'],
+            whole_navig = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted'],
             input_keys=['sm_recovery_flag'],
             output_keys= [])
 

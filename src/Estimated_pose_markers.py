@@ -174,7 +174,7 @@ class PoseEstimator():
 
             return Mean_vector, Cov_matrix
 
-        except linalg.LinAlgError as err:
+        except:
             if 'Singular matrix' in str(err):
 
                 try: 
