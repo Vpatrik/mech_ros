@@ -9,7 +9,7 @@ import yaml
 from geometry_msgs.msg import (PoseWithCovarianceStamped, Quaternion,
                                Transform, TransformStamped)
 from mech_ros_msgs.msg import Marker, MarkerList
-from numpy import dot, linalg, where, zeros, ones, array
+from numpy import dot, linalg, where, zeros, ones, array, multiply
 from numpy import sum as sum_n
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
@@ -107,6 +107,15 @@ class PoseEstimator():
         
         return covarianceMeas, covarianceTrans
 
+    def limitMatrix(self, A):
+        m_abs = (abs(A) < self.min_covariance)
+        m_neg = (A < 0)
+        m_pos = (A > 0)
+        m_abs_neg = multiply(m_abs, m_neg)
+        m_abs_pos = multiply(m_abs, m_pos)
+        A[m_abs_neg] = -self.min_covariance
+        A[m_abs_pos] = self.min_covariance
+        return A
 
     def calculateTransformedCovariance(self, a_x, a_y, fi, x, y, Fi, S_rel, Marker_id):
 
