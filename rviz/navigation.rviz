@@ -4,6 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Global Options1
         - /TF1/Frames1
         - /TF1/Tree1
         - /Map1/Position1
@@ -38,6 +39,8 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: Image
+Toolbars:
+  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -155,11 +158,15 @@ Visualization Manager:
           Value: false
         map:
           Value: true
-        marker_0:
+        marker_14:
           Value: true
-        marker_10:
+        marker_15:
           Value: true
-        marker_30:
+        marker_16:
+          Value: true
+        marker_5:
+          Value: true
+        marker_6:
           Value: true
         marker_7:
           Value: true
@@ -185,11 +192,15 @@ Visualization Manager:
               back_right_wheel:
                 {}
               front_camera_link:
-                marker_0:
+                marker_14:
                   {}
-                marker_10:
+                marker_15:
                   {}
-                marker_30:
+                marker_16:
+                  {}
+                marker_5:
+                  {}
+                marker_6:
                   {}
                 marker_7:
                   {}
@@ -337,7 +348,7 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Alpha: 1
-      Buffer Length: 1
+      Buffer Length: 3
       Class: rviz/Path
       Color: 255; 0; 0
       Enabled: true
@@ -438,7 +449,7 @@ Visualization Manager:
   Global Options:
     Background Color: 229; 229; 229
     Default Light: true
-    Fixed Frame: mechROS_base_link
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -459,16 +470,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 10.0094595
+      Distance: 10.7332373
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.24694477
-        Y: -0.0841799825
-        Z: -1.91769958
+        X: -2.60568452
+        Y: -2.33491325
+        Z: -4.39555502
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
@@ -477,7 +488,7 @@ Visualization Manager:
       Pitch: 1.56979632
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.65857482
+      Yaw: 4.71357536
     Saved: ~
 Window Geometry:
   Displays:
@@ -497,5 +508,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1855
-  X: 1985
+  X: 65
   Y: 24

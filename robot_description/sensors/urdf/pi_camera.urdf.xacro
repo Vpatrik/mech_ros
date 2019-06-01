@@ -107,7 +107,7 @@
           <!-- <CxPrime>0</CxPrime> -->
           <!-- <Cx>0.0</Cx>
         <Cy>0.0</Cy> -->
-          <!-- <focalLength>762.724934</focalLength> -->
+          <focalLength>762.724934</focalLength>
         </plugin>
       </sensor>
       <material>Gazebo/Grass</material>

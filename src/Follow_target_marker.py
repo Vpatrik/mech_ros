@@ -224,7 +224,7 @@ class Follow:
                 linSpeed *= self.linear_decay
 
             # Try to refind fiducial by rotating
-            elif self.got_fid == False and times_since_last_fid < self.max_lost_count:
+            elif self.got_fid == False and times_since_last_fid > self.hysteresis_count  and times_since_last_fid < self.max_lost_count:
                 # Stop moving forward
                 linSpeed = 0
                 # Keep turning in the same direction

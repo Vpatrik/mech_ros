@@ -68,11 +68,14 @@ class WaitForGoal(smach.State):
         rospy.logdebug("Received goal pose: %s", str(msg))
         try:
             if self.simulation:
-                # Simulated
-                trans = self.tf_buffer.lookup_transform('map', 'mechROS_base_link', rospy.Time(0), rospy.Duration(1.0))
-                pose_transformed = tf2_geometry_msgs.do_transform_pose(msg, trans)
-                pose_transformed.header.frame_id = 'map'
-                self.target_pose = pose_transformed
+                # If global frame in Rviz is set to base_link
+                # trans = self.tf_buffer.lookup_transform('map', 'mechROS_base_link', rospy.Time(0), rospy.Duration(1.0))
+                # pose_transformed = tf2_geometry_msgs.do_transform_pose(msg, trans)
+                # pose_transformed.header.frame_id = 'map'
+                # self.target_pose = pose_transformed
+
+                # If global frame in Rviz is set to map
+                self.target_pose = msg
 
             else:
                 # Real robot

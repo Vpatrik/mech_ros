@@ -230,10 +230,22 @@ def non_inf_mult_gauss(Mean_vectors, Cov_matrices):
 
     return Mean_vector, Cov_matrix
 
+def limitMatrix(A, condition):
+    m_abs = (abs(A) < condition)
+    m_neg = (A < 0)
+    m_pos = (A > 0)
+    m_abs_neg = np.multiply(m_abs, m_neg)
+    m_abs_pos = np.multiply(m_abs, m_pos)
+    A[m_abs_neg] = -condition
+    A[m_abs_pos] = condition
+    return A
+
 # timeit.timeit(stmt='pass', setup='pass', timer=<default timer>, number=1000000, globals=None)
 # print(covariances)
 # setup = "import numpy as np"
 # mean = np.random.rand(num,3,1)
+
+
 
 def chol():
     SETUP_CODE = '''
@@ -317,19 +329,36 @@ multiVariateGaussianProductHardCoded(mean,covariances)
     # priniting minimum exec. time 
     print('Informative hard_coded: {}'.format(min(times)))
 
-# mean1, cov1 = non_inf_mult_gauss(mean,covariances)
-# mean2, cov2 = multiVariateGaussianProduct(mean,covariances)
-
-# print(mean1)
-# print(cov1)
-# print('-----------')
-# print(mean2)
-# print(cov2)
 
 # print(timeit.timeit(stmt =Test_code,setup=setup, number=100))
 
 
+# if __name__ == "__main__":
+#     chol()
+#     inf()
+#     infHardCoded()
+
 if __name__ == "__main__":
-    chol()
-    inf()
-    infHardCoded()
+
+    # num = 4
+    # s = 3
+    # min_covariance = 1e-4
+    # A = np.random.rand(num,s,s)
+    # covariances = np.zeros([num,s,s])
+    # for i in range(num):
+    #     covariances[i] = np.dot(A[i],A[i].T)
+    # covariances[covariances < min_covariance] = min_covariance
+
+    # mean = np.random.rand(num,s,1)
+    # mean1, cov1 = non_inf_mult_gauss(mean,covariances)
+    # mean2, cov2 = multiVariateGaussianProduct(mean,covariances)
+
+    # print(mean1)
+    # print(cov1)
+    # print('-----------')
+    # print(mean2)
+    # print(cov2)
+
+    A = np.array([[-0.01,-0.1,0.01],[-0.01,-0.1,0.01],[-0.01,-0.1,0.01]])
+
+    print(limitMatrix(A, 0.02))

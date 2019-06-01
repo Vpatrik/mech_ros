@@ -9,7 +9,7 @@ import yaml
 from geometry_msgs.msg import (PoseWithCovarianceStamped, Quaternion,
                                Transform, TransformStamped)
 from mech_ros_msgs.msg import Marker, MarkerList
-from numpy import dot, linalg, where, zeros, ones, array
+from numpy import dot, linalg, where, zeros, ones, array, multiply
 from numpy import sum as sum_n
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
@@ -37,6 +37,14 @@ class PoseEstimator():
         self.A2 = 3.13
         self.K3 = 4e9
         self.A3 = 3.11
+
+        # Coefficients for normalizing surface
+        self.norm_length = 0.15
+        self.norm_diff = 0.1
+        self.p1 = -self.norm_diff/self.norm_length
+        self.q1 = (1-self.norm_diff)-pi*self.p1
+        self.p2 = self.norm_diff/self.norm_length
+        self.q2 = (1-self.norm_diff)-pi*self.p2
 
         self.valid_marker_flag = False
         self.seq = 0
@@ -87,10 +95,11 @@ class PoseEstimator():
 
     def calculateCovariances(self, S_rel, Yaw_rel, Marker_id):
         # Compute covariance matrix of measurement in local coordinate frame
-        S_norm = S_rel/max(abs(cos(Yaw_rel)),abs(sin(Yaw_rel)))
-        covarianceMeas = zeros([2,2])
+        S_norm = self.B(Yaw_rel)*S_rel/(abs(cos(Yaw_rel)))
+        covarianceMeas = zeros([3,3])
         covarianceMeas[0,0] = self.K1/(S_norm**self.A1)
         covarianceMeas[1,1] = self.K2/(S_norm**self.A2)
+        covarianceMeas[2,2] = self.K3/(S_norm**self.A3)
         covarianceMeas[covarianceMeas < self.min_covariance] = self.min_covariance
 
         # Load covariances from markers .yaml file
@@ -99,14 +108,29 @@ class PoseEstimator():
         covarianceTrans = zeros([3,3])
         covarianceTrans[0,0] = v_xx
         covarianceTrans[1,1] = v_yy
-
-        # covariance in angle = cov_fi + cov_Fi
-        covarianceTrans[2,2] = self.K3/(S_norm**self.A3) + v_FF
-        if covarianceTrans[2,2] < self.min_covariance:
-            covarianceTrans[2,2] = self.min_covariance
-        
+        covarianceTrans[2,2] = v_FF
+       
         return covarianceMeas, covarianceTrans
 
+    def B(self, Yaw_rel):
+        # Calculate value for compenzation of bigger variance for Yaw_rel~=pi
+        Yaw_abs = abs(Yaw_rel%(2*pi))
+        if Yaw_abs > (pi - self.norm_length) and Yaw_abs <= pi:
+            return self.p1*Yaw_abs + self.q1
+        elif Yaw_abs > pi and Yaw_abs < (self.norm_length + pi):
+            return self.p2*Yaw_abs + self.q2
+        else:
+            return 1.0
+
+    def limitMatrix(self, A):
+        m_abs = (abs(A) < self.min_covariance)
+        m_neg = (A < 0)
+        m_pos = (A > 0)
+        m_abs_neg = multiply(m_abs, m_neg)
+        m_abs_pos = multiply(m_abs, m_pos)
+        A[m_abs_neg] = -self.min_covariance
+        A[m_abs_pos] = self.min_covariance
+        return A
 
     def calculateTransformedCovariance(self, a_x, a_y, fi, x, y, Fi, S_rel, Marker_id):
 
@@ -119,29 +143,30 @@ class PoseEstimator():
 
         # Compute Jacobians
         # J_a - Jacobian of point measurement
-        J_a = zeros([2,2])
+        J_a = zeros([3,3])
         J_a[0,0] = cos(fi+Fi)
         J_a[0,1] = -sin(fi+Fi)
+        J_a[0,2] = -a_x*sin(fi+Fi) - a_y*cos(fi+Fi)
         J_a[1,0] = sin(fi+Fi)
         J_a[1,1] = cos(fi+Fi)
+        J_a[1,2] = a_x*cos(fi+Fi) - a_y*sin(fi+Fi)
+        J_a[2,2] = 1
 
         # J_p - Jacobian of transformation
-        J_p = zeros([2,3])
+        J_p = zeros([3,3])
         J_p[0,0] = 1
         J_p[0,2] = -a_x*sin(fi+Fi) - a_y*cos(fi+Fi)
         J_p[1,1] = 1
         J_p[1,2] = a_x*cos(fi+Fi) - a_y*sin(fi+Fi)
+        J_p[2,2] = 1
 
         # Compute transformed covariance matrix of a': Cov_a = J_a.covarianceMeas.J_a' + J_p.covarianceTrans.J_p'
         covarianceMeas, covarianceTrans = self.calculateCovariances(S_rel, fi, Marker_id)
         cov_a = dot(dot(J_a, covarianceMeas), J_a.T) + dot(dot(J_p, covarianceTrans), J_p.T)
 
-        # Make 3x3 covariance matrix for transformed: a_x', a_y', theta  (theta = Fi + fi)
-        transformedCovariance = ones([3,3])*self.min_covariance
-        transformedCovariance[:2,:2] = cov_a
-        transformedCovariance[2,2] = covarianceTrans[2][2]
-        transformedCovariance[transformedCovariance < self.min_covariance] = self.min_covariance
-        return transformedCovariance
+        # Make sure no element is smaller than minimal
+        cov_a = self.limitMatrix(cov_a)
+        return cov_a
 
     # Compute product for n gaussians
     def multiVariateGaussianProduct(self, Mean_vectors, Cov_matrices):
@@ -346,7 +371,7 @@ class PoseEstimator():
             else:
                 mean_tr, cov_tr = mean[0], covariances[0]
 
-            cov_tr[cov_tr < self.min_covariance] = self.min_covariance
+            cov_tr = self.limitMatrix(cov_tr)
            
             # Fill estimated pose
             self.estimated.header.stamp = time
@@ -361,12 +386,12 @@ class PoseEstimator():
 
             self.estimated.pose.covariance[0] = cov_tr[0,0]
             self.estimated.pose.covariance[1] = cov_tr[0,1]
-            # cov_pose[5] = cov_tr[0][2]
+            self.estimated.pose.covariance[5] = cov_tr[0][2]
             self.estimated.pose.covariance[6] = self.estimated.pose.covariance[1]
             self.estimated.pose.covariance[7] = cov_tr[1,1]
-            # cov_pose[11] = cov_tr[1][2]
-            # cov_pose[30] = cov_pose[5]
-            # cov_pose[31] = cov_pose[11]
+            self.estimated.pose.covariance[11] = cov_tr[1][2]
+            self.estimated.pose.covariance[30] = self.estimated.pose.covariance[5]
+            self.estimated.pose.covariance[31] = self.estimated.pose.covariance[11]
             self.estimated.pose.covariance[35] = cov_tr[2,2]
 
             self.pose_publisher.publish(self.estimated)
